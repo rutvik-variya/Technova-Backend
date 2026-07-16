@@ -1,0 +1,41 @@
+# Node
+node_modules/
+
+# Build output
+dist/
+
+# Environment variables / secrets
+.env
+.env.*
+!.env.example
+
+# Prisma
+# Keep schema + migrations, ignore generated client
+node_modules/.prisma/
+src/generated/prisma/
+prisma/generated/
+
+# Logs
+logs/
+*.log
+
+# Uploaded files (if your app stores them locally)
+uploads/
+src/uploads/
+
+# OS files
+Thumbs.db
+.DS_Store
+ehthumbs.db
+Desktop.ini
+
+# VS Code
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# TypeScript cache
+*.tsbuildinfo
+
