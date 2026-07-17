@@ -26,7 +26,7 @@ enum PaymentStatus {
   FAILED
 }
 
-model user {
+model User {
   id           String   @id @default(cuid())
   name         String
   email        String   @unique
@@ -35,6 +35,20 @@ model user {
   refreshToken String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+
+  session Session[]
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
 }
 
 model Category {
