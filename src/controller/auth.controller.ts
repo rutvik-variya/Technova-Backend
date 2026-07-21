@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { ApiResponse } from "../utils/ApiResponse";
-import { asyncHandler } from "../utils/AsyncHandler";
+import { asyncHandler } from "../utils/asyncHandler";
 import { AuthService } from "../service/auth.service";
 
 const register = asyncHandler(async (req: Request, res: Response) => {
@@ -24,7 +24,7 @@ const login = asyncHandler(async (req: Request, res: Response) => {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: "lax",
-        maxAge: 15 * 60 * 1000,
+        maxAge: 2 * 60 * 1000,
     })
 
     res.json(new ApiResponse(200, "Login Successful", result.user))
@@ -32,14 +32,16 @@ const login = asyncHandler(async (req: Request, res: Response) => {
 
 const logout = asyncHandler(async (req: Request, res: Response) => {
     const token = req.cookies.session;
-
     if (token) {
         await AuthService.logout(token);
     }
 
     res.clearCookie("session");
-
     res.json(new ApiResponse(200, "Logout successful"));
 });
 
-export { register, login, logout }
+const test = asyncHandler(async (req: Request, res: Response) => {
+    res.send("testing route called")
+});
+
+export { register, login, logout, test }

@@ -38,7 +38,7 @@ export class AuthService {
         if (!isPasswordValid) throw new ApiError(401, "Invalid credentials");
         const sessionToken = crypto.randomBytes(32).toString("hex")
 
-        const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
+        const expiresAt = new Date(Date.now() + 2 * 60 * 1000);
 
         await prisma.session.create({
             data: {
