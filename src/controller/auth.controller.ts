@@ -24,7 +24,7 @@ const login = asyncHandler(async (req: Request, res: Response) => {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: "lax",
-        maxAge: 2 * 60 * 1000,
+        maxAge: 15 * 60 * 1000,
     })
 
     res.json(new ApiResponse(200, "Login Successful", result.user))
