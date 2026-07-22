@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
+import { logger } from "../src/utils/logger";
 
 const prisma = new PrismaClient();
 
@@ -23,13 +24,13 @@ async function main() {
             role: "ADMIN"
         }
     })
-    console.log("Admin seeded successfully");
+    logger.info("Admin seeded successfully");
 
 }
 
 main()
     .catch((e) => {
-        console.error(e);
+        logger.error(e);
     })
     .finally(async () => {
         await prisma.$disconnect();

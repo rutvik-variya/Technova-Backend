@@ -1,5 +1,6 @@
 import cron from "node-cron";
 import prisma from "../lib/prisma";
+import { logger } from "../utils/logger";
 
 const sessionCleanupJob = () => {
     cron.schedule("*/1 * * * *", async () => {
@@ -12,11 +13,11 @@ const sessionCleanupJob = () => {
                 },
             });
 
-            console.log(
+            logger.info(
                 `[Session Cleanup] Deleted ${result.count} expired session(s)`
             );
         } catch (error) {
-            console.error("[Session Cleanup] Error:", error);
+            logger.error(error);
         }
     });
 };

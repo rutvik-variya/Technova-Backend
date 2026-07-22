@@ -1,12 +1,13 @@
-import dotenv from "dotenv"
+import { env } from "./src/config/env";
 import sessionCleanupJob from "./src/jobs/sessionCleanup.job";
-dotenv.config();
 
 import app from "./src/app"
+import { logger } from "./src/utils/logger";
 
-const PORT = process.env.PORT || 5000;
+
+const PORT = env.PORT || 5000;
 
 app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+    logger.info(`Server running on port ${PORT}`);
     sessionCleanupJob();
 });

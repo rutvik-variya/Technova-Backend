@@ -3,3 +3,4 @@ export interface CreateCategoryDto {
     description?: string,
     image?: string
 }
+

@@ -3,6 +3,7 @@ import { CreateCategoryDto } from "../types/category.types";
 import slugify from "../utils/slugify";
 import { CATEGORY_MESSAGE } from "../constants/category";
 import { ApiError } from "../utils/ApiError";
+import { categorySelect } from "../constants/prismaSelect";
 
 const createCategoryService = async (data: CreateCategoryDto) => {
     const name = data.name.trim();
@@ -45,14 +46,7 @@ const getCategoriesService = async () => {
         orderBy: {
             createdAt: "desc",
         },
-        select: {
-            id: true,
-            name: true,
-            slug: true,
-            description: true,
-            image: true,
-            createdAt: true,
-        },
+        select: categorySelect
     });
 };
 
@@ -62,14 +56,7 @@ const getCategoryByIdService = async (id: string) => {
         where: {
             id,
         },
-        select: {
-            id: true,
-            name: true,
-            slug: true,
-            description: true,
-            image: true,
-            createdAt: true,
-        },
+        select: categorySelect
     });
 
     if (!category) {
@@ -134,14 +121,7 @@ const updateCategoryService = async (id: string, data: Partial<CreateCategoryDto
         },
         data: updateData,
 
-        select: {
-            id: true,
-            name: true,
-            slug: true,
-            description: true,
-            image: true,
-            updatedAt: true,
-        },
+        select: categorySelect
     });
 
 }
