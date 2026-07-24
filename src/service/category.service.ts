@@ -1,11 +1,11 @@
 import prisma from "../lib/prisma";
 import { CreateCategoryDto } from "../types/category.types";
 import slugify from "../utils/slugify";
-import { CATEGORY_MESSAGE } from "../constants/category";
+import { CATEGORY_MESSAGE } from "../types/category.types";
 import { ApiError } from "../utils/ApiError";
 import { categorySelect } from "../constants/prismaSelect";
 
-const createCategoryService = async (data: CreateCategoryDto) => {
+export const createCategoryService = async (data: CreateCategoryDto) => {
     const name = data.name.trim();
     const slug = slugify(name);
 
@@ -41,7 +41,7 @@ const createCategoryService = async (data: CreateCategoryDto) => {
     return category
 }
 
-const getCategoriesService = async () => {
+export const getCategoriesService = async () => {
     return await prisma.category.findMany({
         orderBy: {
             createdAt: "desc",
@@ -50,7 +50,7 @@ const getCategoriesService = async () => {
     });
 };
 
-const getCategoryByIdService = async (id: string) => {
+export const getCategoryByIdService = async (id: string) => {
 
     const category = await prisma.category.findUnique({
         where: {
@@ -66,7 +66,7 @@ const getCategoryByIdService = async (id: string) => {
 };
 
 
-const updateCategoryService = async (id: string, data: Partial<CreateCategoryDto>) => {
+export const updateCategoryService = async (id: string, data: Partial<CreateCategoryDto>) => {
     const category = await prisma.category.findUnique({
         where: {
             id
@@ -126,7 +126,7 @@ const updateCategoryService = async (id: string, data: Partial<CreateCategoryDto
 
 }
 
-const deleteCategoryService = async (id: string) => {
+export const deleteCategoryService = async (id: string) => {
     const category = await prisma.category.findUnique({
         where: {
             id,
@@ -149,4 +149,3 @@ const deleteCategoryService = async (id: string) => {
     return;
 }
 
-export { createCategoryService, getCategoriesService, getCategoryByIdService, updateCategoryService, deleteCategoryService }

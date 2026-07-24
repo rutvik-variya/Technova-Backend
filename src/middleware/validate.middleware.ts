@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { ZodError, ZodType } from "zod";
 import { ApiError } from "../utils/ApiError";
+import { logger } from "../utils/logger";
 
 interface ValidateOptions {
     body?: ZodType;
@@ -15,19 +16,9 @@ const validate =
                 if (schemas.body) {
                     req.body = await schemas.body.parseAsync(req.body);
                 }
-
                 next();
             } catch (error) {
-                if (error instanceof ZodError) {
-                    return next(
-                        new ApiError(
-                            400,
-                            "Validation failed",
-                            error.issues
-                        )
-                    );
-                }
-
+                logger.error(error);
                 next(error);
             }
         };

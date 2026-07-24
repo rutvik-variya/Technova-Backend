@@ -5,6 +5,7 @@ interface paginationMeta {
 }
 
 export const pagination = ({ page, limit, total }: paginationMeta) => {
+    const totalPages = Math.max(1, Math.ceil(total / limit));
     return {
         page,
         limit,

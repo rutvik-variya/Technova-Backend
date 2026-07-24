@@ -3,7 +3,7 @@ import cors from "cors"
 import cookieParser from "cookie-parser";
 import authRoutes from './routes/auth.routes'
 import categryRoutes from './routes/category.routes'
-// import productRoutes from "./routes/product.routes"
+import productRoutes from "./routes/product.routes"
 import { errorHandler } from "./middleware/error.middleware";
 
 const app = express();
@@ -18,7 +18,7 @@ app.get("/api/health", (_, res) => {
 
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/categories", categryRoutes);
-// app.use("/api/v1/products",productRoutes)
+app.use("/api/v1/products", productRoutes)
 
 app.use(errorHandler)
 export default app;

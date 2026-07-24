@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { asyncHandler } from "../utils/asyncHandler";
 import { ApiResponse } from "../utils/ApiResponse";
 import { createCategoryService, deleteCategoryService, getCategoriesService, getCategoryByIdService, updateCategoryService } from "../service/category.service";
-import { CATEGORY_MESSAGE } from "../constants/category";
+import { CATEGORY_MESSAGE } from "../types/category.types";
 
 const createCategory = asyncHandler(async (req: Request, res: Response) => {
     const category = await createCategoryService(req.body);
