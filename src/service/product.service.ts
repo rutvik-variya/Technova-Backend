@@ -1,11 +1,11 @@
 import prisma from "../lib/prisma";
-import { createProdutDto, PRODUCT_MESSAGE, updateProductDto } from "../types/product.types";
+import { createProductDto, PRODUCT_MESSAGE, updateProductDto } from "../types/product.types";
 import slugify from "../utils/slugify"
 import { ApiError } from "../utils/ApiError";
 import { pagination } from "../utils/pagination";
 import { productSelect } from "../constants/prismaSelect";
 
-export const createProductService = async (data: createProdutDto) => {
+export const createProductService = async (data: createProductDto) => {
     const category = await prisma.category.findUnique({
         where: {
             id: data.categoryId,

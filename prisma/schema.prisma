@@ -124,15 +124,22 @@ model ProductVariant {
 
   sku String @unique
 
-  price     Decimal @db.Decimal(10, 2)
-  salePrice Decimal @db.Decimal(10, 2)
+  ram     String?
+  storage String?
+  color   String?
 
-  attribute Json
+  price        Decimal  @db.Decimal(10, 2)
+  comparePrice Decimal? @db.Decimal(10, 2)
+
+  stock Int @default(0)
+
+  isActive Boolean @default(true)
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
 
   inventory Inventory?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 
   @@index([productId])
 }
@@ -150,4 +157,3 @@ model Inventory {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
-

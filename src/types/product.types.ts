@@ -1,5 +1,5 @@
 import { ProductStatus } from "@prisma/client";
-export interface createProdutDto {
+export interface createProductDto {
     name: string;
     description: string;
     shortDescription?: string;
@@ -9,7 +9,19 @@ export interface createProdutDto {
     categoryId: string;
 }
 
-export interface updateProductDto extends Partial<createProdutDto> { }
+export interface updateProductDto extends Partial<createProductDto> { }
+
+export interface createVariantDto {
+    sku: string,
+    ram: string,
+    storage: string,
+    color: string,
+    price: number,
+    comparePrice: number,
+    stock: number
+    isActive: boolean,
+    productId: string
+}
 
 
 export const PRODUCT_MESSAGE = {
@@ -21,4 +33,13 @@ export const PRODUCT_MESSAGE = {
     FETCHED_ONE: "Product fetched successfully",
     UPDATED: "Product updated successfully",
     DELETED: "Product deleted successfully",
+
+    UPLOAD_PRODUCT_IMAGE: "Product images uploaded successfully",
+    FETCH_PRODUCT_IMAGE: "Product fetch succesfullly",
+    IMAGE_NOT_FOUND: "Image not found",
+    PRIMARY_IMAGE_UPDATE: "Primary image updated successfully",
+    PRODUCT_IMAGE_DELETE: "Product image deleted successfully",
+
+    CREATE_VARIANT: "Product variant created successfully",
+    SKU_EXISTS: "SKU already exists"
 }
