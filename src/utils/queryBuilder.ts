@@ -1,5 +1,3 @@
-import { INSPECT_MAX_BYTES } from "node:buffer";
-
 interface QueryBuiderOptions {
     query: Record<string, any>;
     searchableFields?: string[]

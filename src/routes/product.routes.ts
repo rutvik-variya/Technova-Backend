@@ -6,8 +6,10 @@ import { createProductSchema, updateProductSchema } from "../validators/product.
 import { createProduct, deleteProduct, getProductBySlug, getProducts, updateProduct } from "../controller/product.controller";
 import upload from "../middleware/upload.middleware";
 import { deleteProductImage, getProductImage, setPrimaryProductImage, uploadProductImages } from "../controller/productImage.controller";
-import { createVariantSchema } from "../validators/productVariant.validator";
-import { createVariant } from "../controller/productVariant.controller";
+import { createVariantSchema, updateVariantSchema } from "../validators/productVariant.validator";
+import { createVariant, deleteVariant, getProductVariants, getVariantById, updateVariant } from "../controller/productVariant.controller";
+import { adjustInventory, getInventory, getLowStockProducts, getOutOfStockProducts, updateInventory } from "../controller/productInventory.controller";
+import { adjustInventorySchema, updateInventorySchema } from "../validators/productInvetory.validator";
 
 
 const router = Router();
@@ -38,7 +40,6 @@ router.delete(
     deleteProduct
 );
 
-
 // productImage Routes
 
 router.post(
@@ -68,7 +69,6 @@ router.get(
     getProductImage
 );
 
-
 // product variant
 
 router.post(
@@ -79,6 +79,75 @@ router.post(
         body: createVariantSchema
     }),
     createVariant
+);
+
+
+router.get(
+    "/:productId/variants",
+    getProductVariants
+);
+
+router.get(
+    "/variants/:variantId",
+    getVariantById
+)
+
+router.patch(
+    "/variants/:variantId",
+    authenticate,
+    authorize("ADMIN"),
+    validate({
+        body: updateVariantSchema,
+    }),
+    updateVariant
+)
+
+router.delete(
+    "/variants/:variantId",
+    authenticate,
+    authorize("ADMIN"),
+    deleteVariant
+);
+
+// Inventory Route
+router.get(
+    "/variants/:variantId/inventory",
+    getInventory
+);
+
+
+router.patch(
+    "/variants/:variantId/inventory",
+    authenticate,
+    authorize("ADMIN"),
+    validate({
+        body: updateInventorySchema
+    }),
+    updateInventory
+)
+
+router.post(
+    "/variants/:variantId/inventory/adjust",
+    authenticate,
+    authorize("ADMIN"),
+    validate({
+        body: adjustInventorySchema,
+    }),
+    adjustInventory
+)
+
+router.get(
+    "/inventory/low-stock",
+    authenticate,
+    authorize("ADMIN"),
+    getLowStockProducts
+)
+
+router.get(
+    "/inventory/out-of-stock",
+    authenticate,
+    authorize("ADMIN"),
+    getOutOfStockProducts
 );
 
 export default router;

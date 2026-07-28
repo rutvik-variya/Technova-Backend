@@ -9,3 +9,5 @@ export const createVariantSchema = z.object({
     comparePrice: z.number().positive().optional(),
     stock: z.number().int().min(0),
 });
+
+export const updateVariantSchema = createVariantSchema.partial();

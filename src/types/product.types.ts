@@ -23,7 +23,6 @@ export interface createVariantDto {
     productId: string
 }
 
-
 export const PRODUCT_MESSAGE = {
     CREATED: "Product created successfully",
     ALREADY_EXISTS: "Product already exists",
@@ -41,5 +40,18 @@ export const PRODUCT_MESSAGE = {
     PRODUCT_IMAGE_DELETE: "Product image deleted successfully",
 
     CREATE_VARIANT: "Product variant created successfully",
-    SKU_EXISTS: "SKU already exists"
+    SKU_EXISTS: "SKU already exists",
+    FETCH_VARIANTS: "Variants fetched successfully",
+    FETCH_ONE_VARIANT: "Variant fetched successfully",
+    VARIENT_NOT_FOUND: "Variant not found",
+    UPDATE_VARIANT: "Variant updated successfully",
+    DELETE_VARIANT: "Variant deleted successfully",
+
+    FETCH_INVENTORY: "Inventory fetched successfully",
+    INVENTORY_NOT_FOUND: "Inventory not found",
+    UPDATE_INVENTORY: "Inventory updated successfully",
+    ADJUST_INVENTORY: "Inventory adjusted successfully",
+    INSUFFICIENT_INVENTORY: "Insufficient inventory",
+    LOW_STOCK_PRODUCT_FETCH: "Low stock products fetched successfully",
+    OUT_OF_STOCK: "Out of stock products fetched successfully"
 }

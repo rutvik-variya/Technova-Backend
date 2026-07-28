@@ -44,3 +44,132 @@ export const createVariantService = async (
 
     return variant;
 };
+
+
+export const getProductVariantsService = async (productId: string) => {
+    const product = await prisma.product.findUnique({
+        where: {
+            id: productId,
+            deletedAt: null,
+        },
+        select: {
+            id: true,
+        },
+    });
+
+    if (!product) {
+        throw new ApiError(404, PRODUCT_MESSAGE.NOT_FOUND);
+    }
+
+    const variants = await prisma.productVariant.findMany({
+        where: {
+            productId,
+            deletedAt: null,
+            isActive: true,
+        },
+
+        orderBy: {
+            createdAt: "asc",
+        },
+    });
+
+    return variants;
+};
+
+
+export const getVariantByIdService = async (variantId: string) => {
+
+    const variant = await prisma.productVariant.findFirst({
+
+        where: {
+            id: variantId,
+            deletedAt: null,
+            isActive: true,
+        },
+
+        include: {
+            product: {
+                select: {
+                    id: true,
+                    name: true,
+                    slug: true,
+                },
+            },
+        },
+    });
+
+    if (!variant) {
+        throw new ApiError(
+            404,
+            PRODUCT_MESSAGE.VARIENT_NOT_FOUND
+        );
+    }
+
+    return variant;
+};
+
+export const updateVariantService = async (
+    variantId: string,
+    data: Partial<createVariantDto>
+) => {
+
+    const variant = await prisma.productVariant.findUnique({
+        where: {
+            id: variantId,
+        },
+    });
+
+    if (!variant || variant.deletedAt) {
+        throw new ApiError(404, PRODUCT_MESSAGE.VARIENT_NOT_FOUND);
+    }
+
+    if (data.sku) {
+        const exists = await prisma.productVariant.findFirst({
+            where: {
+                sku: data.sku,
+                NOT: {
+                    id: variantId,
+                },
+            },
+        });
+
+        if (exists) {
+            throw new ApiError(409, PRODUCT_MESSAGE.SKU_EXISTS);
+        }
+    }
+
+    return prisma.productVariant.update({
+        where: {
+            id: variantId,
+        },
+        data,
+    });
+};
+
+export const deleteVariantService = async (
+    variantId: string
+) => {
+
+    const variant = await prisma.productVariant.findUnique({
+        where: {
+            id: variantId,
+        },
+    });
+
+    if (!variant || variant.deletedAt) {
+        throw new ApiError(
+            404,
+            PRODUCT_MESSAGE.VARIENT_NOT_FOUND
+        );
+    }
+
+    await prisma.productVariant.update({
+        where: {
+            id: variantId,
+        },
+        data: {
+            deletedAt: new Date(),
+            isActive: false,
+        },
+    });
+};
