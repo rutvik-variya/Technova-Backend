@@ -109,7 +109,6 @@ export const getLowStockProductsService = async () => {
     );
 };
 
-
 export const getOutOfStockProductsService = async () => {
     return prisma.inventory.findMany({
         where: {

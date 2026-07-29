@@ -12,15 +12,19 @@ export interface createProductDto {
 export interface updateProductDto extends Partial<createProductDto> { }
 
 export interface createVariantDto {
-    sku: string,
-    ram: string,
-    storage: string,
-    color: string,
-    price: number,
-    comparePrice: number,
-    stock: number
-    isActive: boolean,
-    productId: string
+    sku: string;
+
+    ram?: string;
+    storage?: string;
+    color?: string;
+
+    price: number;
+    comparePrice?: number;
+
+    stock?: number;
+    isActive?: boolean;
+
+    productId: string;
 }
 
 export const PRODUCT_MESSAGE = {

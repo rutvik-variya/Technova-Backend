@@ -4,6 +4,7 @@ import slugify from "../utils/slugify"
 import { ApiError } from "../utils/ApiError";
 import { pagination } from "../utils/pagination";
 import { productSelect } from "../constants/prismaSelect";
+import { queryBuilder } from "../utils/queryBuilder";
 
 export const createProductService = async (data: createProductDto) => {
     const category = await prisma.category.findUnique({
@@ -44,24 +45,30 @@ export const createProductService = async (data: createProductDto) => {
 }
 
 export const getProductSevice = async (query: any) => {
-    const page = Number(query.page) || 1;
-    const limit = Number(query.limit) || 10;
-    const skip = (page - 1) * limit;
+
+    const qb = queryBuilder({
+        query,
+        searchableFields: [
+            "name",
+            "brand",
+            "description",
+            "shortDescription"
+        ]
+    })
 
     const where = {
         deletedAt: null,
         status: "ACTIVE" as const,
+        ...qb.where
     }
 
     const [products, total] = await prisma.$transaction([
         prisma.product.findMany({
             where,
+            skip: qb.skip,
+            take: qb.take,
+            orderBy: qb.orderBy,
             select: productSelect,
-            skip,
-            take: limit,
-            orderBy: {
-                createdAt: "desc"
-            }
         }),
         prisma.product.count({
             where,
@@ -71,8 +78,8 @@ export const getProductSevice = async (query: any) => {
     return {
         products,
         pagination: pagination({
-            page,
-            limit,
+            page: qb.page,
+            limit: qb.limit,
             total,
         }),
     };

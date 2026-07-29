@@ -15,6 +15,8 @@ export const productSelect = {
     description: true,
     shortDescription: true,
     brand: true,
+    basePrice: true,
+    maxPrice: true,
     status: true,
     isFeatured: true,
     createdAt: true,

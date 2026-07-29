@@ -1,6 +1,7 @@
 import prisma from "../lib/prisma";
 import { ApiError } from "../utils/ApiError";
 import { createVariantDto, PRODUCT_MESSAGE } from "../types/product.types";
+import { updateProductPrice } from "../utils/updateProductPrice";
 
 export const createVariantService = async (
     productId: string,
@@ -41,6 +42,7 @@ export const createVariantService = async (
             stock: data.stock,
         },
     });
+    await updateProductPrice(productId);
 
     return variant;
 };
@@ -137,13 +139,14 @@ export const updateVariantService = async (
             throw new ApiError(409, PRODUCT_MESSAGE.SKU_EXISTS);
         }
     }
-
-    return prisma.productVariant.update({
+    const updateVariant = await prisma.productVariant.update({
         where: {
             id: variantId,
         },
         data,
     });
+    await updateProductPrice(updateVariant.productId);
+    return updateVariant;
 };
 
 export const deleteVariantService = async (
@@ -172,4 +175,6 @@ export const deleteVariantService = async (
             isActive: false,
         },
     });
+
+    await updateProductPrice(variant.productId);
 };
