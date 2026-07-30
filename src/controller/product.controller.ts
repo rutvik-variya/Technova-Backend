@@ -4,8 +4,11 @@ import { ApiResponse } from "../utils/ApiResponse";
 import {
     createProductService,
     deleteProductService,
+    getFeaturedProductsService,
     getProductBySlugService,
     getProductSevice,
+    getRelatedProductsService,
+    updateFeaturedStatusService,
     updateProductService,
 } from "../service/product.service";
 import { PRODUCT_MESSAGE } from "../types/product.types";
@@ -54,4 +57,52 @@ export const deleteProduct = asyncHandler(
             .status(200)
             .json(new ApiResponse(200, PRODUCT_MESSAGE.DELETED, null));
     },
+);
+
+
+export const getFeaturedProducts = asyncHandler(
+    async (req: Request, res: Response) => {
+        const products = await getFeaturedProductsService();
+        return res
+            .status(200)
+            .json(new ApiResponse(200, PRODUCT_MESSAGE.FEATURED_PRODUCT_FETCHED, products))
+    }
+)
+
+export const updateFeaturedStatus = asyncHandler(
+    async (req: Request, res: Response) => {
+
+        const product = await updateFeaturedStatusService(
+            req.params.id as string,
+            req.body
+        );
+
+        return res.status(200).json(
+            new ApiResponse(
+                200,
+                PRODUCT_MESSAGE.FEATURED_UPDATED,
+                product
+            )
+        );
+    }
+);
+
+
+
+export const getRelatedProducts = asyncHandler(
+    async (req: Request, res: Response) => {
+
+        const products =
+            await getRelatedProductsService(
+                req.params.slug as string
+            );
+
+        return res.status(200).json(
+            new ApiResponse(
+                200,
+                PRODUCT_MESSAGE.RELATED_PRODUCTS_FETCHED,
+                products
+            )
+        );
+    }
 );

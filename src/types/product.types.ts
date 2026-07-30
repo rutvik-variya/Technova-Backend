@@ -27,6 +27,10 @@ export interface createVariantDto {
     productId: string;
 }
 
+export interface updateFeaturedDto {
+    isFeatured: boolean;
+}
+
 export const PRODUCT_MESSAGE = {
     CREATED: "Product created successfully",
     ALREADY_EXISTS: "Product already exists",
@@ -57,5 +61,10 @@ export const PRODUCT_MESSAGE = {
     ADJUST_INVENTORY: "Inventory adjusted successfully",
     INSUFFICIENT_INVENTORY: "Insufficient inventory",
     LOW_STOCK_PRODUCT_FETCH: "Low stock products fetched successfully",
-    OUT_OF_STOCK: "Out of stock products fetched successfully"
+    OUT_OF_STOCK: "Out of stock products fetched successfully",
+
+    FEATURED_PRODUCT_FETCHED: "Featured products fetched successfully",
+    FEATURED_UPDATED: "Featured status updated successfully",
+
+    RELATED_PRODUCTS_FETCHED: "Related products fetched successfully",
 }

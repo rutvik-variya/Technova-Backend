@@ -2,8 +2,8 @@ import { Router } from "express";
 
 import { authenticate, authorize } from "../middleware/auth.middleware";
 import validate from "../middleware/validate.middleware";
-import { createProductSchema, updateProductSchema } from "../validators/product.validator";
-import { createProduct, deleteProduct, getProductBySlug, getProducts, updateProduct } from "../controller/product.controller";
+import { createProductSchema, updateFeaturedSchema, updateProductSchema } from "../validators/product.validator";
+import { createProduct, deleteProduct, getFeaturedProducts, getProductBySlug, getProducts, getRelatedProducts, updateFeaturedStatus, updateProduct } from "../controller/product.controller";
 import upload from "../middleware/upload.middleware";
 import { deleteProductImage, getProductImage, setPrimaryProductImage, uploadProductImages } from "../controller/productImage.controller";
 import { createVariantSchema, updateVariantSchema } from "../validators/productVariant.validator";
@@ -14,16 +14,49 @@ import { adjustInventorySchema, updateInventorySchema } from "../validators/prod
 
 const router = Router();
 
+// static Route of product module 
+
+router.get("/", getProducts)
+
+router.get(
+    "/:id/images",
+    getProductImage
+);
+
+
+router.get(
+    "/:productId/variants",
+    getProductVariants
+);
+
+router.get(
+    "/variants/:variantId",
+    getVariantById
+)
+
+router.get(
+    "/variants/:variantId/inventory",
+    getInventory
+);
+
+router.get(
+    "/featured",
+    getFeaturedProducts
+)
+
+router.get(
+    "/:slug/related",
+    getRelatedProducts
+);
+
+// product routes
+
 router.post("/",
     authenticate,
     authorize("ADMIN"),
     validate({ body: createProductSchema }),
     createProduct
 );
-
-router.get("/", getProducts)
-
-router.get("/:slug", getProductBySlug)
 
 router.patch(
     "/:id",
@@ -39,6 +72,8 @@ router.delete(
     authorize("ADMIN"),
     deleteProduct
 );
+
+router.get("/:slug", getProductBySlug)
 
 // productImage Routes
 
@@ -64,11 +99,6 @@ router.delete(
     deleteProductImage
 )
 
-router.get(
-    "/:id/images",
-    getProductImage
-);
-
 // product variant
 
 router.post(
@@ -80,17 +110,6 @@ router.post(
     }),
     createVariant
 );
-
-
-router.get(
-    "/:productId/variants",
-    getProductVariants
-);
-
-router.get(
-    "/variants/:variantId",
-    getVariantById
-)
 
 router.patch(
     "/variants/:variantId",
@@ -110,11 +129,6 @@ router.delete(
 );
 
 // Inventory Route
-router.get(
-    "/variants/:variantId/inventory",
-    getInventory
-);
-
 
 router.patch(
     "/variants/:variantId/inventory",
@@ -150,4 +164,16 @@ router.get(
     getOutOfStockProducts
 );
 
+
+// feature product routes 
+
+router.patch(
+    "/:id/featured",
+    authenticate,
+    authorize("ADMIN"),
+    validate({
+        body: updateFeaturedSchema,
+    }),
+    updateFeaturedStatus
+)
 export default router;

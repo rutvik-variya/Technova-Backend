@@ -185,3 +185,100 @@ export const deleteProductService = async (id: string) => {
         },
     });
 }
+
+
+// isFeautured
+
+export const getFeaturedProductsService = async () => {
+    const products = await prisma.product.findMany({
+        where: {
+            deletedAt: null,
+            isFeatured: true,
+            status: "ACTIVE"
+        },
+        orderBy: {
+            createdAt: "desc",
+        },
+        select: productSelect
+    })
+    return products;
+}
+
+export const updateFeaturedStatusService = async (
+    id: string,
+    data: updateProductDto
+) => {
+    const product = await prisma.product.findFirst({
+        where: {
+            id,
+            deletedAt: null
+        }
+    })
+
+    if (!product) {
+        throw new ApiError(404, PRODUCT_MESSAGE.NOT_FOUND);
+    }
+
+    return prisma.product.update({
+        where: {
+            id,
+        },
+        data: {
+            isFeatured: data.isFeatured
+        },
+        select: productSelect
+    })
+}
+
+
+export const getRelatedProductsService = async (
+    slug: string
+) => {
+    const product =
+        await prisma.product.findFirst({
+            where: {
+                slug,
+                deletedAt: null,
+                status: "ACTIVE",
+            },
+            select: {
+                id: true,
+                categoryId: true,
+                brand: true,
+            },
+        });
+
+    if (!product) {
+        throw new ApiError(404, PRODUCT_MESSAGE.NOT_FOUND);
+    }
+
+    const relatedProducts =
+        await prisma.product.findMany({
+            where: {
+                deletedAt: null,
+                status: "ACTIVE",
+                id: {
+                    not: product.id,
+                },
+                OR: [
+                    {
+                        brand: product.brand,
+                    },
+                    {
+                        categoryId:
+                            product.categoryId,
+                    },
+                ],
+            },
+
+            take: 8,
+
+            orderBy: {
+                createdAt: "desc",
+            },
+
+            select: productSelect,
+
+        });
+    return relatedProducts;
+};

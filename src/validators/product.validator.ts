@@ -26,3 +26,7 @@ export const updateProductSchema = createProductSchema.partial()
             message: "At least one field is required",
         }
     );;
+
+export const updateFeaturedSchema = z.object({
+    isFeatured: z.boolean(),
+});
