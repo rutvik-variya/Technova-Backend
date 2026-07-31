@@ -2,7 +2,6 @@ import { Request, Response } from "express";
 import { asyncHandler } from "../utils/asyncHandler";
 import { ApiResponse } from "../utils/ApiResponse";
 
-import { PRODUCT_MESSAGE } from "../types/product.types";
 import { REVIEW_MESSAGE } from "../types/review.types";
 import { createReviewService, deleteReviewService, getReviewsService, updateReviewService } from "../service/review.service";
 
