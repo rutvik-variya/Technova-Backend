@@ -270,15 +270,11 @@ export const getRelatedProductsService = async (
                     },
                 ],
             },
-
             take: 8,
-
             orderBy: {
                 createdAt: "desc",
             },
-
             select: productSelect,
-
         });
     return relatedProducts;
 };

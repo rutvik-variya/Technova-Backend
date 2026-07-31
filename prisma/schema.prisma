@@ -42,8 +42,9 @@ model User {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  session Session[]
-  reviews ProductReview[]
+  session        Session[]
+  reviews        ProductReview[]
+  recentlyViewed RecentlyViewed[]
 }
 
 model Session {
@@ -95,12 +96,14 @@ model Product {
   averageRating Float @default(0)
   reviewCount   Int   @default(0)
 
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
-  deletedAt       DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
   productImages   ProductImage[]
   productVariants ProductVariant[]
   reviews         ProductReview[]
+  recentlyViewed  RecentlyViewed[]
 
   @@index([categoryId])
   @@index([brand])
@@ -185,4 +188,21 @@ model ProductReview {
   @@unique([productId, userId])
   @@index([productId])
   @@index([userId])
+}
+
+model RecentlyViewed {
+  id String @id @default(uuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  viewedAt DateTime @default(now())
+
+  @@unique([userId, productId])
+  @@index([userId])
+  @@index([productId])
+  @@index([viewedAt])
 }
