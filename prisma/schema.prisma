@@ -18,18 +18,10 @@ enum ProductStatus {
   ARCHIVED
 }
 
-enum OrderStatus {
-  PENDING
-  CONFIRMED
-  SHIPPED
-  DELIVERED
-  CANCELLED
-}
-
-enum PaymentStatus {
-  PENDING
-  SUCCESS
-  FAILED
+enum AddressType {
+  HOME
+  OFFICE
+  OTHER
 }
 
 model User {
@@ -46,6 +38,7 @@ model User {
   reviews        ProductReview[]
   recentlyViewed RecentlyViewed[]
   cart           Cart?
+  addresses      Address[]
 }
 
 model Session {
@@ -239,4 +232,31 @@ model CartItem {
   updatedAt DateTime @updatedAt
 
   @@unique([cartId, productId, variantId])
+}
+
+model Address {
+  id String @id @default(uuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  fullName String 
+  phone    String
+
+  country String
+  state   String
+  city    String
+
+  postalCode   String
+  addressLine1 String
+  addressLine2 String?
+
+  landmark    String?
+  addressType AddressType @default(HOME)
+  isDefault   Boolean     @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
 }
