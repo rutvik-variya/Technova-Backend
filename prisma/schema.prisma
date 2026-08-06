@@ -39,6 +39,7 @@ model User {
   recentlyViewed RecentlyViewed[]
   cart           Cart?
   addresses      Address[]
+  wishlist       Wishlist[]
 }
 
 model Session {
@@ -99,6 +100,7 @@ model Product {
   reviews         ProductReview[]
   recentlyViewed  RecentlyViewed[]
   cartItems       CartItem[]
+  wishlist        Wishlist[]
 
   @@index([categoryId])
   @@index([brand])
@@ -240,7 +242,7 @@ model Address {
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  fullName String 
+  fullName String
   phone    String
 
   country String
@@ -258,5 +260,19 @@ model Address {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@index([userId])
+}
+
+model Wishlist {
+  id        String  @id @default(uuid())
+  userId    String
+  productId String
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product   Product @relation(fields: [productId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, productId], name: "wishlist_user_product_unique")
   @@index([userId])
 }

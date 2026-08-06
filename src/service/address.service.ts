@@ -64,6 +64,10 @@ export const getMyAddressesService = async (
         ],
     });
 
+    if (!addresses) {
+        throw new ApiError(404, "Address not found");
+    }
+
     return addresses.map(addressResponse);
 };
 

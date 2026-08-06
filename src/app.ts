@@ -8,6 +8,8 @@ import reviewsRoutes from "./routes/review.routes";
 import recentViewRoutes from "./routes/recentlyViewed.route";
 import cartRoutes from "./routes/cart.routes";
 import addressRoutes from "./routes/address.routes";
+import wishlistRoutes from "./routes/wishlist.routes"
+
 import { errorHandler } from "./middleware/error.middleware";
 
 const app = express();
@@ -27,6 +29,7 @@ app.use("/api/v1/reviews", reviewsRoutes);
 app.use("/api/v1/recently-view", recentViewRoutes);
 app.use("/api/v1/cart", cartRoutes)
 app.use("/api/v1/address", addressRoutes)
+app.use("/api/v1/wishlist", wishlistRoutes)
 
 app.use(errorHandler)
 

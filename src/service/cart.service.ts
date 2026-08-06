@@ -6,65 +6,15 @@ import { validateProduct } from "../utils/cart/validateProduct";
 import { validateStock } from "../utils/cart/validateStock";
 import { updateCartTotals } from "../utils/cart/updateCartTotals";
 import { getCart } from "../utils/cart/getCart";
+import { addItemToCart } from "../utils/cart/addItemToCart";
 
 export const addtocartService = async (
     userId: string,
     payload: AddToCartDto
 ) => {
-    const { productId, variantId, quantity } = payload;
-    return await prisma.$transaction(async (tx) => {
-        // get or create users cart
-        const cart = await getOrCreateCart(tx, userId);
-        if (!cart) {
-            throw new ApiError(500, CART_MESSAGE.FAILED_CREATE_CART);
-        }
-
-        // validate product and variant
-        const { product, variant } = await validateProduct(tx, productId, variantId);
-
-        // check existing cart item
-        const existingCartItem = await tx.cartItem.findFirst({
-            where: {
-                cartId: cart.id,
-                productId,
-                variantId: variantId ?? null
-            }
-        })
-
-        // final quantitiy after add 
-        const finalQuantity = (existingCartItem?.quantity ?? 0) + quantity;
-
-        // vaidate stock 
-        validateStock(variant.stock, finalQuantity);
-
-        // update existing item 
-        if (existingCartItem) {
-            await tx.cartItem.update({
-                where: {
-                    id: existingCartItem.id,
-                },
-                data: {
-                    quantity: finalQuantity,
-                },
-            });
-        }
-        else {
-            await tx.cartItem.create({
-                data: {
-                    cartId: cart.id,
-                    productId,
-                    variantId,
-                    quantity,
-                    priceAtAdded: variant.price,
-                },
-            });
-        }
-
-        // recalculate cart
-        await updateCartTotals(tx, cart.id);
-
-        return getCart(tx, cart.id)
-    })
+    return prisma.$transaction((tx) =>
+        addItemToCart(tx, userId, payload)
+    );
 }
 
 export const getUserCartService = async (userId: string) => {
