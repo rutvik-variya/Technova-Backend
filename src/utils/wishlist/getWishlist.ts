@@ -5,19 +5,31 @@ export const getWishlist = async (
     userId: string
 ) => {
     return tx.wishlist.findMany({
-        where: {
-            userId,
-        },
-        include: {
-            product: {
-                include: {
-                    category: true,
-                    productVariants: true,
-                },
-            },
-        },
+        where: { userId },
         orderBy: {
             createdAt: "desc",
+        },
+        select: {
+            id: true,
+            createdAt: true,
+
+            product: {
+                select: {
+                    id: true,
+                    name: true,
+                    slug: true,
+                    brand: true,
+                    basePrice: true,
+                    maxPrice: true,
+                    status: true,
+                    category: {
+                        select: {
+                            id: true,
+                            name: true,
+                        },
+                    },
+                },
+            },
         },
     });
 };

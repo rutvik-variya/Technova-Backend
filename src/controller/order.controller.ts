@@ -1,0 +1,28 @@
+import { Request, Response } from "express";
+import { asyncHandler } from "../utils/asyncHandler";
+import { ApiResponse } from "../utils/ApiResponse";
+import { ORDER_MESSAGE } from "../types/order.types";
+import { createOrderService } from "../service/order.service";
+
+type AuthenticatedRequest = Request & {
+    user: {
+        id: string;
+    };
+};
+
+export const createOrder = asyncHandler(
+    async (req: AuthenticatedRequest, res: Response) => {
+        const order = await createOrderService(
+            req.user.id,
+            req.body
+        );
+
+        return res.status(201).json(
+            new ApiResponse(
+                201,
+                ORDER_MESSAGE.CREATED,
+                order
+            )
+        );
+    }
+);

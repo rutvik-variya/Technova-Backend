@@ -1,11 +1,13 @@
 import { Prisma } from "@prisma/client";
+import prisma from "../../lib/prisma";
+import { ApiError } from "../ApiError";
+import { WISHLIST_MESSAGE } from "../../types/wishlist.type";
 
-export const getWishlistItem = (
-    tx: Prisma.TransactionClient,
+export const getWishlistItem = async(
     userId: string,
     productId: string
 ) => {
-    return tx.wishlist.findUnique({
+    const wishlistItem = await prisma.wishlist.findUnique({
         where: {
             wishlist_user_product_unique: {
                 userId,
@@ -14,10 +16,22 @@ export const getWishlistItem = (
         },
         include: {
             product: {
-                include: {
-                    productVariants: true
+                select: {
+                    id: true,
+                    name: true,
+                    productVariants: {
+                        select: {
+                            id: true
+                        }
+                    }
                 }
             }
         }
     });
+
+    if (!wishlistItem) {
+        throw new ApiError(404, WISHLIST_MESSAGE.ITEM_NOT_FOUND);
+    }
+
+    return wishlistItem;
 };

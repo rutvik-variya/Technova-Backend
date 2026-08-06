@@ -35,10 +35,9 @@ export const addItemToCart = async (
         },
     });
 
-    const finalQuantity =
-        (existingItem?.quantity ?? 0) + quantity;
+    const finalQuantity = (existingItem?.quantity ?? 0) + quantity;
 
-    await validateStock(variant.stock, finalQuantity);
+    validateStock(variant.stock, finalQuantity);
 
     if (existingItem) {
         await tx.cartItem.update({

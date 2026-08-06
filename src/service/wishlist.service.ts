@@ -1,4 +1,3 @@
-import { includes } from "zod";
 import prisma from "../lib/prisma";
 import { AddWishlistDto, WISHLIST_MESSAGE } from "../types/wishlist.type";
 import { ApiError } from "../utils/ApiError";
@@ -6,8 +5,6 @@ import { addItemToCart } from "../utils/cart/addItemToCart";
 import { getWishlist } from "../utils/wishlist/getWishlist";
 import { getWishlistItem } from "../utils/wishlist/getWishlistItem";
 import { wishlistResponse } from "../utils/wishlist/wishlistResponse";
-import { logger } from "../utils/logger";
-
 
 export const addWishlistService = async (
     userId: string,
@@ -19,6 +16,7 @@ export const addWishlistService = async (
             id: productId
         }
     })
+
     if (!product) {
         throw new ApiError(404, WISHLIST_MESSAGE.PRODUCT_NOT_FOUND);
     }
@@ -64,9 +62,26 @@ export const removeWishlistService = async (
     userId: string,
     productId: string
 ) => {
+
+    const wishlistItem = await getWishlistItem(
+        userId,
+        productId
+    );
+
+    await prisma.wishlist.delete({
+        where: {
+            id: wishlistItem?.id,
+        },
+    });
+    return null;
+};
+
+export const moveWishlistToCartService = async (
+    userId: string,
+    productId: string
+) => {
     return prisma.$transaction(async (tx) => {
         const wishlistItem = await getWishlistItem(
-            tx,
             userId,
             productId
         );
@@ -75,38 +90,9 @@ export const removeWishlistService = async (
             throw new ApiError(404, WISHLIST_MESSAGE.ITEM_NOT_FOUND);
         }
 
-        await tx.wishlist.delete({
-            where: {
-                id: wishlistItem.id,
-            },
-        });
-
-        return null;
-    });
-};
-
-export const moveWishlistToCartService = async (
-    userId: string,
-    productId: string
-) => {
-    return prisma.$transaction(
-    async (tx) => {
-        const wishlistItem = await getWishlistItem(
-            tx,
-            userId,
-            productId
-        );
-
-        if (!wishlistItem) {
-            throw new ApiError(
-                404,
-                WISHLIST_MESSAGE.ITEM_NOT_FOUND
-            );
-        }
-
         const cart = await addItemToCart(tx, userId, {
             productId,
-            variantId: wishlistItem.product.productVariants[0].id,
+            variantId: wishlistItem.product.productVariants[0]?.id,
             quantity: 1
         });
 
@@ -118,10 +104,7 @@ export const moveWishlistToCartService = async (
 
         return cart;
     },
-    {
-        timeout: 50000, 
-    }
-);
+    );
 };
 
 

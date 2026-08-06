@@ -1,7 +1,7 @@
 import { ApiError } from "../ApiError";
 import { CART_MESSAGE } from "../../types/cart.types";
 
-export const validateStock = async (
+export const validateStock =(
     availableStock: number,
     requestedQuantity: number
 ) => {
