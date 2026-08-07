@@ -20,7 +20,7 @@ export const createOrder = asyncHandler(
         return res.status(201).json(
             new ApiResponse(
                 201,
-                ORDER_MESSAGE.CREATED,
+                ORDER_MESSAGE.ORDER_CREATED,
                 order
             )
         );

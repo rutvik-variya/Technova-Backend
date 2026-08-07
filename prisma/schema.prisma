@@ -173,7 +173,7 @@ model ProductVariant {
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
-  inventory  Inventory?
+  inventory  Inventory
   cartItems  CartItem[]
   orderItems OrderItem[]
 
