@@ -33,7 +33,6 @@ app.use("/api/v1/address", addressRoutes)
 app.use("/api/v1/wishlist", wishlistRoutes)
 app.use("/api/v1/order", orderRoutes)
 
-
 app.use(errorHandler)
 
 export default app;

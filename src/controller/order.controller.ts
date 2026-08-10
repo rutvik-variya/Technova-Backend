@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { asyncHandler } from "../utils/asyncHandler";
 import { ApiResponse } from "../utils/ApiResponse";
 import { ORDER_MESSAGE } from "../types/order.types";
-import { createOrderService } from "../service/order.service";
+import { createOrderService, getMyOrdersService, getOrderService } from "../service/order.service";
 
 type AuthenticatedRequest = Request & {
     user: {
@@ -21,6 +21,41 @@ export const createOrder = asyncHandler(
             new ApiResponse(
                 201,
                 ORDER_MESSAGE.ORDER_CREATED,
+                order
+            )
+        );
+    }
+);
+
+export const getMyOrders = asyncHandler(
+    async (req: AuthenticatedRequest, res: Response) => {
+        const result = await getMyOrdersService(
+            req.user.id,
+            req.query
+        );
+
+        return res.status(200).json(
+            new ApiResponse(
+                200,
+                ORDER_MESSAGE.ORDERS_FETCHED,
+                result
+            )
+        );
+    }
+);
+
+export const getOrder = asyncHandler(
+    async (req: AuthenticatedRequest, res: Response) => {
+
+        const { orderId: rawOrderId } = req.params;
+        const orderId = Array.isArray(rawOrderId) ? rawOrderId[0] : rawOrderId;
+
+        const order = await getOrderService(req.user.id, orderId);
+
+        return res.status(200).json(
+            new ApiResponse(
+                200,
+                ORDER_MESSAGE.ORDER_FETCHED,
                 order
             )
         );

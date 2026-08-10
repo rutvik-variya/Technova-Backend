@@ -17,7 +17,7 @@ export const clearCart = async (
         },
         data: {
             subtotal: 0,
-            totalItems: 0,
+            totalItem: 0,
         },
     });
 }

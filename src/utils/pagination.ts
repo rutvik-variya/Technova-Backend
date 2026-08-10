@@ -10,7 +10,7 @@ export const pagination = ({ page, limit, total }: paginationMeta) => {
         page,
         limit,
         total,
-        totalPages: Math.ceil(total / limit),
+        totalPages,
         hasNext: page < Math.ceil(total / limit),
         hasPrevious: page > 1
     }

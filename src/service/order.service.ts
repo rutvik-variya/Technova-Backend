@@ -7,8 +7,14 @@ import { createOrderItem } from "../utils/order/createOrderItems";
 import { generateOrderNumber } from "../utils/order/generateOrderNumber";
 import { getAddressForOrder } from "../utils/order/getAddressForOrder";
 import { getCartForOrder } from "../utils/order/getCartForOrder";
+import { getMyOrders } from "../utils/order/getMyOrders";
+import { getOrder } from "../utils/order/getOrder";
+import { orderDetailResponse } from "../utils/order/orderDetailResponse";
+import { orderListResponse } from "../utils/order/orderListResponse";
+import { orderQueryBuilder } from "../utils/order/orderQueryBuilder";
 import { updateInventory } from "../utils/order/updateInventory";
 import { validateOrderCart } from "../utils/order/validateOrderCart";
+import { pagination } from "../utils/pagination";
 
 export const createOrderService = async (
     userId: string,
@@ -17,24 +23,36 @@ export const createOrderService = async (
 
     return prisma.$transaction(
         async (tx) => {
-            const cart = await getCartForOrder(tx, userId);
+
+            const cart = await getCartForOrder(
+                tx,
+                userId
+            );
+
             if (!cart) {
-                throw new ApiError(400, ORDER_MESSAGE.CART_EMPTY);
+                throw new ApiError(
+                    400,
+                    ORDER_MESSAGE.CART_EMPTY
+                );
             }
 
-            validateOrderCart(cart)
+            validateOrderCart(cart);
 
             const address = await getAddressForOrder(
                 tx,
                 userId,
                 payload.addressId
-            )
+            );
 
             if (!address) {
-                throw new ApiError(404, ORDER_MESSAGE.ADDRESS_NOT_FOUND);
+                throw new ApiError(
+                    404,
+                    ORDER_MESSAGE.ADDRESS_NOT_FOUND
+                );
             }
-
-            const total = calculateOrderTotals(cart.cartItems);
+            const total = calculateOrderTotals(
+                cart.cartItems
+            );
             const orderNumber = generateOrderNumber();
 
             const order =
@@ -45,11 +63,13 @@ export const createOrderService = async (
                         addressId: address.id,
                         status: "PENDING",
                         paymentStatus: "PENDING",
-                        paymentMethod: payload.paymentMethod,
+                        paymentMethod:
+                            payload.paymentMethod,
 
                         subtotal: total.subtotal,
                         discount: total.discount,
-                        shippingCharge: total.shippingCharge,
+                        shippingCharge:
+                            total.shippingCharge,
                         tax: total.tax,
                         grandTotal: total.grandTotal,
                     },
@@ -69,8 +89,10 @@ export const createOrderService = async (
                     },
                 });
 
-            const orderItems = createOrderItem(cart.cartItems);
-            
+            const orderItems = createOrderItem(
+                cart.cartItems
+            );
+
             await tx.orderItem.createMany({
                 data: orderItems.map(
                     (item) => ({
@@ -90,7 +112,7 @@ export const createOrderService = async (
                 cart.id
             );
 
-            return {
+            const result = {
                 ...order,
                 subtotal: Number(
                     order.subtotal
@@ -101,17 +123,70 @@ export const createOrderService = async (
                 shippingCharge: Number(
                     order.shippingCharge
                 ),
-                tax: Number(order.tax),
+                tax: Number(
+                    order.tax
+                ),
                 grandTotal: Number(
                     order.grandTotal
                 ),
             };
-
+            return result;
         },
         {
-            timeout: 5000,
+            timeout: 15000,
             maxWait: 2000,
         }
+    );
+};
 
-    )
+
+export const getMyOrdersService = async (
+    userId: string,
+    query: Record<string, any>
+) => {
+
+    const options =
+        orderQueryBuilder(
+            userId,
+            query
+        );
+
+    const {
+        orders,
+        total,
+    } = await getMyOrders(
+        prisma,
+        {
+            userId,
+            ...options,
+        }
+    );
+
+    return {
+        data: orderListResponse(
+            orders
+        ),
+        meta: pagination({
+            page: options.page,
+            limit: options.limit,
+            total,
+        }),
+    };
+};
+
+
+export const getOrderService = async (
+    userId: string,
+    orderId: string
+) => {
+
+    const order = await getOrder(
+        prisma,
+        userId,
+        orderId
+    );
+
+    return orderDetailResponse(
+        order
+    );
 };

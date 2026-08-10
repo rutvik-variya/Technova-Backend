@@ -1,9 +1,14 @@
 interface QueryBuiderOptions {
     query: Record<string, any>;
-    searchableFields?: string[]
+    searchableFields?: string[];
+    sortableFields?: string[];
 }
 
-export const queryBuilder = ({ query, searchableFields }: QueryBuiderOptions) => {
+export const queryBuilder = ({
+    query,
+    searchableFields = [],
+    sortableFields = []
+}: QueryBuiderOptions) => {
     // pagination
     const page = Math.max(Number(query.page) || 1, 1);
     const limit = Math.max(Number(query.limit) || 10, 1);
@@ -13,16 +18,23 @@ export const queryBuilder = ({ query, searchableFields }: QueryBuiderOptions) =>
 
     // where
 
-    const where: Record<string, any> = {};
     const search = query.search?.toString().trim();
+    const where: Record<string, any> = {};
 
-    if (search) {
-        where.OR = searchableFields?.map((field) => ({
-            [field]: {
-                contains: search,
-                mode: "insensitive"
-            }
-        }))
+    if (
+        search &&
+        searchableFields &&
+        searchableFields.length > 0
+    ) {
+        where.OR =
+            searchableFields.map(
+                (field) => ({
+                    [field]: {
+                        contains: search,
+                        mode: "insensitive",
+                    },
+                })
+            );
     }
 
     // filter
@@ -52,30 +64,29 @@ export const queryBuilder = ({ query, searchableFields }: QueryBuiderOptions) =>
             }),
         };
     }
-
+    if (query.orderNumber) {
+        where.orderNumber = query.orderNumber
+    }
     // sorting 
-    const sortableFields = [
-        "createdAt",
-        "name",
-        "basePrice",
-    ];
 
     const sortBy = sortableFields.includes(query.sortBy)
         ? query.sortBy
-        : "createdAt";
+        : sortableFields[0];
 
     const sortOrder =
         query.sortOrder === "asc" ? "asc" : "desc";
 
-    const orderBy = {
-        [sortBy]: sortOrder,
-    };
+    const orderBy = sortBy
+        ? {
+            [sortBy]: sortOrder,
+        }
+        : undefined;
 
     return {
         where,
         orderBy,
         skip,
-        take,
+        take: limit,
         page,
         limit,
     };

@@ -173,7 +173,7 @@ model ProductVariant {
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
-  inventory  Inventory
+  inventory  Inventory?
   cartItems  CartItem[]
   orderItems OrderItem[]
 
@@ -331,7 +331,9 @@ model Order {
   orderItems OrderItem[]
 
   @@index([userId])
-  @@index([status])
+  @@index([userId, createdAt])
+  @@index([userId, status])
+  @@index([userId, paymentStatus])
 }
 
 model OrderItem {
@@ -344,6 +346,7 @@ model OrderItem {
 
   variantId String
   variant   ProductVariant @relation(fields: [variantId], references: [id])
+
 
   productName String
   productSlug String
