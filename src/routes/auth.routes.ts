@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { register, login, logout, test } from "../controller/auth.controller";
+import { register, login, logout } from "../controller/auth.controller";
 import { authenticate, authorize } from "../middleware/auth.middleware";
 import validate from "../middleware/validate.middleware";
 import {
@@ -26,6 +26,5 @@ router.post(
 
 router.post("/logout", authenticate, logout);
 
-router.get("/test", authenticate, authorize("ADMIN"), test)
 
 export default router;

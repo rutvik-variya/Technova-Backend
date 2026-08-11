@@ -1,8 +1,9 @@
 import { Router } from "express";
 import { authenticate, authorize } from "../middleware/auth.middleware";
 import validate from "../middleware/validate.middleware";
-import { createOrderSchema, getOrderSchema } from "../validators/order.validator";
-import { createOrder, getMyOrders, getOrder} from "../controller/order.controller";
+import { adminGetOrdersSchema, cancelOrderSchema, createOrderSchema, getOrderSchema, updateOrderStatusBodySchema, updateOrderStatusParamsSchema }
+    from "../validators/order.validator";
+import { cancelOrder, createOrder, getAllOrders, getMyOrders, getOrder, updateOrderStatus, } from "../controller/order.controller";
 
 const router = Router();
 
@@ -29,6 +30,38 @@ router.get(
     }),
     getOrder
 )
+
+
+router.patch(
+    "/:orderId/cancel",
+    authenticate,
+    validate({
+        params: cancelOrderSchema,
+    }),
+    cancelOrder
+);
+
+//Admin Routes :
+router.get(
+    "/admin/getAllOrders",
+    authenticate,
+    authorize("ADMIN"),
+    validate({
+        query: adminGetOrdersSchema
+    }),
+    getAllOrders
+)
+
+router.patch(
+    "/admin/:orderId/status",
+    authenticate,
+    authorize("ADMIN"),
+    validate({
+        params: updateOrderStatusParamsSchema,
+        body: updateOrderStatusBodySchema
+    }),
+    updateOrderStatus
+);
 
 
 export default router;

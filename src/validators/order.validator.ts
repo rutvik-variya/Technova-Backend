@@ -1,4 +1,4 @@
-import { OrderStatus, PaymentMethod } from "@prisma/client";
+import { OrderStatus, PaymentMethod, PaymentStatus } from "@prisma/client";
 import { z } from "zod";
 
 export const createOrderSchema = z.object({
@@ -32,3 +32,69 @@ export const getOrderSchema = z.object({
     }),
 });
 
+export const cancelOrderSchema =
+    z.object({
+        params: z.object({
+            orderId: z.uuid(),
+        }),
+    });
+
+
+export const adminGetOrdersSchema =
+    z.object({
+        query: z.object({
+            page: z.string().optional(),
+            limit: z.string().optional(),
+            search: z.string().optional(),
+            sortBy: z
+                .enum([
+                    "createdAt",
+                    "updatedAt",
+                    "grandTotal",
+                ])
+                .optional(),
+            sortOrder: z
+                .enum(["asc", "desc"])
+                .optional(),
+            userId: z.uuid().optional(),
+            status: z.enum(
+                Object.values(OrderStatus) as [
+                    string,
+                    ...string[]
+                ]
+            ).optional(),
+            paymentStatus: z.enum(
+                Object.values(PaymentStatus) as [
+                    string,
+                    ...string[]
+                ]
+            ).optional(),
+            paymentMethod: z.enum(
+                Object.values(PaymentMethod) as [
+                    string,
+                    ...string[]
+                ]
+            ).optional(),
+
+            startDate: z
+                .iso
+                .datetime()
+                .optional(),
+
+            endDate: z
+                .iso
+                .datetime()
+                .optional(),
+        }),
+    });
+
+
+export const updateOrderStatusParamsSchema = z.object({
+    orderId: z.uuid(),
+});
+
+export const updateOrderStatusBodySchema = z.object({
+    status: z.enum(
+        Object.values(OrderStatus) as [string, ...string[]]
+    ),
+});

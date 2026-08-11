@@ -36,6 +36,10 @@ export interface OrderListItem {
     createdAt: Date;
 }
 
+export interface UpdateOrderStatusDto {
+    status: OrderStatus;
+}
+
 export const ORDER_MESSAGE = {
     CART_EMPTY: "Your cart is empty.",
     ADDRESS_NOT_FOUND: "Address not found.",
@@ -50,4 +54,8 @@ export const ORDER_MESSAGE = {
     ORDER_NOT_FOUND: "Order not found.",
     ORDER_CANCELLED: "Order cancelled successfully.",
     ORDER_CANNOT_BE_CANCELLED: "This order cannot be cancelled",
+    ORDER_ALREADY_IN_STATUS: "Order already in status.",
+    INVALID_STATUS_TRANSITION: "Invalid status transition",
+    ORDER_STATUS_UPDATED: "Order status updated successfully"
 };
+

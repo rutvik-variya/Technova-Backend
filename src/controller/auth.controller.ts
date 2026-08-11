@@ -40,8 +40,6 @@ const logout = asyncHandler(async (req: Request, res: Response) => {
     res.json(new ApiResponse(200, "Logout successful"));
 });
 
-const test = asyncHandler(async (req: Request, res: Response) => {
-    res.send("testing route called")
-});
 
-export { register, login, logout, test }
+
+export { register, login, logout }

@@ -17,6 +17,5 @@ export const canCancelOrder = (
             ORDER_MESSAGE.ORDER_CANNOT_BE_CANCELLED
         );
     }
-
     return true;
 };
