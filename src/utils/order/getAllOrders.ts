@@ -1,5 +1,4 @@
 import { Prisma } from "@prisma/client";
-import { ApiError } from "../../utils/ApiError";
 
 export const getAllOrders = async (
     tx: Prisma.TransactionClient | Prisma.DefaultPrismaClient,
@@ -49,7 +48,7 @@ export const getAllOrders = async (
             }
         }),
         tx.order.count({
-            where
+            where,
         })
     ]);
 

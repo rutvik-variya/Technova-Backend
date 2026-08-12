@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { asyncHandler } from "../utils/asyncHandler";
 import { ApiResponse } from "../utils/ApiResponse";
 import { ORDER_MESSAGE } from "../types/order.types";
-import { cancelOrderService, createOrderService, getAllOrdersService, getMyOrdersService, getOrderService, updateOrderStatusService } from "../service/order.service";
+import { cancelOrderService, createOrderService, getAllOrdersService, getMyOrdersService, getOrderService, getOrderStatusHistoryService, updateOrderStatusService } from "../service/order.service";
 
 type AuthenticatedRequest = Request & {
     user: {
@@ -103,12 +103,15 @@ export const updateOrderStatus = asyncHandler(
     async (req: AuthenticatedRequest, res: Response) => {
         const { orderId: rawOrderId } = req.params;
         const orderId = Array.isArray(rawOrderId) ? rawOrderId[0] : rawOrderId;
-        const { status } = req.body;
+        const { status, note } = req.body;
 
+        const adminId = req.user.id;
         const order = await updateOrderStatusService(
             orderId,
+            adminId,
             {
                 status,
+                note
             }
         );
 
@@ -117,6 +120,26 @@ export const updateOrderStatus = asyncHandler(
                 200,
                 ORDER_MESSAGE.ORDER_STATUS_UPDATED,
                 order
+            )
+        );
+    }
+);
+
+
+export const getOrderStatusHistory = asyncHandler(
+    async (req: AuthenticatedRequest, res: Response) => {
+        const { orderId: rawOrderId } = req.params;
+        const orderId = Array.isArray(rawOrderId) ? rawOrderId[0] : rawOrderId;
+
+        const history = await getOrderStatusHistoryService(
+            orderId
+        );
+
+        return res.status(200).json(
+            new ApiResponse(
+                200,
+                ORDER_MESSAGE.ORDER_TIMELINE_FETCH,
+                history
             )
         );
     }

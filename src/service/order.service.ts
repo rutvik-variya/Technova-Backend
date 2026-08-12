@@ -25,6 +25,9 @@ import { restoreInventory } from "../utils/order/restoreInventory";
 import { updateInventory } from "../utils/order/updateInventory";
 import { validateOrderCart } from "../utils/order/validateOrderCart";
 import { pagination } from "../utils/pagination";
+import { createOrderStatusHistory } from "../utils/order/createOrderStatusHistory";
+import { getOrderStatusHistory } from "../utils/order/getOrderStatusHistory";
+import { orderTimelineResponse } from "../utils/order/orderTimelineResponse";
 
 export const createOrderService = async (
     userId: string,
@@ -122,6 +125,17 @@ export const createOrderService = async (
                 cart.id
             );
 
+            await tx.orderStatusHistory.create({
+                data: {
+                    orderId: order.id,
+                    fromStatus: null,
+                    toStatus: "PENDING",
+                    changedById: null,
+                    note: "Order created",
+                },
+            });
+
+
             const result = {
                 ...order,
                 subtotal: Number(
@@ -183,7 +197,6 @@ export const getMyOrdersService = async (
         }),
     };
 };
-
 
 export const getOrderService = async (
     userId: string,
@@ -272,14 +285,15 @@ export const getAllOrdersService = async (
 export const updateOrderStatusService =
     async (
         orderId: string,
+        adminId: string,
         payload: UpdateOrderStatusDto
     ) => {
         return prisma.$transaction(
             async (tx) => {
 
                 const order = await getOrderStatus(
-                        tx,
-                        orderId
+                    tx,
+                    orderId
                 );
 
                 validateOrderStatusTransition(
@@ -287,12 +301,53 @@ export const updateOrderStatusService =
                     payload.status
                 );
 
-                return updateOrderStatus(
+                const updateOrder = updateOrderStatus(
                     tx,
                     orderId,
                     order.status,
                     payload.status
                 );
+
+                await createOrderStatusHistory(
+                    tx,
+                    {
+                        orderId,
+                        fromStatus: order.status,
+                        toStatus: payload.status,
+                        changedById: adminId,
+                        note: payload.note
+                    }
+                )
+                return updateOrder;
             }
         );
     };
+
+export const getOrderStatusHistoryService = async (
+    orderId: string
+) => {
+
+    const order = await prisma.order.findUnique({
+        where: {
+            id: orderId,
+        },
+        select: {
+            id: true,
+        },
+    });
+
+    if (!order) {
+        throw new ApiError(404, ORDER_MESSAGE.ORDER_NOT_FOUND);
+    }
+
+    const history = await getOrderStatusHistory(
+        prisma,
+        orderId
+    );
+
+    return orderTimelineResponse(
+        history
+    );
+};
+
+

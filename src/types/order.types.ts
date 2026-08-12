@@ -38,6 +38,7 @@ export interface OrderListItem {
 
 export interface UpdateOrderStatusDto {
     status: OrderStatus;
+    note?: string;
 }
 
 export const ORDER_MESSAGE = {
@@ -56,6 +57,7 @@ export const ORDER_MESSAGE = {
     ORDER_CANNOT_BE_CANCELLED: "This order cannot be cancelled",
     ORDER_ALREADY_IN_STATUS: "Order already in status.",
     INVALID_STATUS_TRANSITION: "Invalid status transition",
-    ORDER_STATUS_UPDATED: "Order status updated successfully"
+    ORDER_STATUS_UPDATED: "Order status updated successfully",
+    ORDER_TIMELINE_FETCH: "Order timeline fetched successfully"
 };
 

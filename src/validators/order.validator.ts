@@ -97,4 +97,17 @@ export const updateOrderStatusBodySchema = z.object({
     status: z.enum(
         Object.values(OrderStatus) as [string, ...string[]]
     ),
+    note: z
+        .string()
+        .trim()
+        .max(500)
+        .optional(),
 });
+
+
+export const getOrderStatusHistorySchema =
+    z.object({
+        params: z.object({
+            orderId: z.uuid(),
+        }),
+    });

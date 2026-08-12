@@ -1,9 +1,9 @@
 import { Router } from "express";
 import { authenticate, authorize } from "../middleware/auth.middleware";
 import validate from "../middleware/validate.middleware";
-import { adminGetOrdersSchema, cancelOrderSchema, createOrderSchema, getOrderSchema, updateOrderStatusBodySchema, updateOrderStatusParamsSchema }
+import { adminGetOrdersSchema, cancelOrderSchema, createOrderSchema, getOrderSchema, getOrderStatusHistorySchema, updateOrderStatusBodySchema, updateOrderStatusParamsSchema }
     from "../validators/order.validator";
-import { cancelOrder, createOrder, getAllOrders, getMyOrders, getOrder, updateOrderStatus, } from "../controller/order.controller";
+import { cancelOrder, createOrder, getAllOrders, getMyOrders, getOrder, getOrderStatusHistory, updateOrderStatus, } from "../controller/order.controller";
 
 const router = Router();
 
@@ -62,6 +62,16 @@ router.patch(
     }),
     updateOrderStatus
 );
+
+router.get(
+    "/admin/:orderId/timeline",
+    authenticate,
+    authorize("ADMIN"),
+    validate({
+        params: getOrderStatusHistorySchema
+    }),
+    getOrderStatusHistory
+)
 
 
 export default router;

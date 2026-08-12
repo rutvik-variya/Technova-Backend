@@ -57,13 +57,14 @@ model User {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  session        Session[]
-  reviews        ProductReview[]
-  recentlyViewed RecentlyViewed[]
-  cart           Cart?
-  addresses      Address[]
-  wishlist       Wishlist[]
-  orders         Order[]
+  session            Session[]
+  reviews            ProductReview[]
+  recentlyViewed     RecentlyViewed[]
+  cart               Cart?
+  addresses          Address[]
+  wishlist           Wishlist[]
+  orders             Order[]
+  orderStatusHistory OrderStatusHistory[]
 }
 
 model Session {
@@ -328,7 +329,8 @@ model Order {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  orderItems OrderItem[]
+  orderItems    OrderItem[]
+  statusHistory OrderStatusHistory[]
 
   @@index([userId])
   @@index([userId, createdAt])
@@ -365,4 +367,27 @@ model OrderItem {
   updatedAt DateTime @updatedAt
 
   @@index([orderId])
+  @@index([productId])
+  @@index([variantId])
 }
+
+model OrderStatusHistory {
+  id      String @id @default(uuid())
+  orderId String
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  fromStatus OrderStatus?
+  toStatus   OrderStatus
+
+  changedById String?
+  changedBy   User?   @relation(fields: [changedById], references: [id], onDelete: SetNull)
+
+  note String?
+
+  createdAt DateTime @default(now())
+
+  @@index([orderId, createdAt])
+  @@index([changedById])
+  @@index([toStatus, createdAt])
+}
+
