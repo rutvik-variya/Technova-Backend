@@ -1,6 +1,4 @@
 import { Prisma } from "@prisma/client";
-
-
 export const getCheckoutCart = async (
     tx:
         | Prisma.TransactionClient
@@ -20,7 +18,8 @@ export const getCheckoutCart = async (
                     variantId: true,
                     quantity: true,
                     priceAtAdded: true,
-
+                    createdAt: true,
+                    updatedAt: true,
                     product: {
                         select: {
                             id: true,
@@ -31,8 +30,7 @@ export const getCheckoutCart = async (
                     },
                     variant: {
                         select: {
-                            id: true,
-                            name: true,
+                            productId: true,
                             sku: true,
                             price: true,
                             stock: true

@@ -13,10 +13,6 @@ export const validateCheckoutItems = (
         if (!item.variant) {
             throw new ApiError(404, CHECKOUT_MESSAGE.VARIANT_NOT_FOUND);
         }
-
-        if (item.product.status !== "PUBLISHED") {
-            throw new ApiError(400, `${item.product.name} is unavailable`);
-        }
     }
 
     return true;

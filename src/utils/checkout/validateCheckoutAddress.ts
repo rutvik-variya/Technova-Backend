@@ -19,7 +19,7 @@ export const validateCheckoutAddress = async (
 
             select: {
                 id: true,
-                name: true,
+                fullName: true,
                 phone: true,
                 addressLine1: true,
                 addressLine2: true,

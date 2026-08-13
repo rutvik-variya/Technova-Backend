@@ -10,6 +10,7 @@ import cartRoutes from "./routes/cart.routes";
 import addressRoutes from "./routes/address.routes";
 import wishlistRoutes from "./routes/wishlist.routes"
 import orderRoutes from "./routes/order.routes"
+import checkoutRoutes from "./routes/checkout.routes"
 
 import { errorHandler } from "./middleware/error.middleware";
 
@@ -32,7 +33,10 @@ app.use("/api/v1/cart", cartRoutes)
 app.use("/api/v1/address", addressRoutes)
 app.use("/api/v1/wishlist", wishlistRoutes)
 app.use("/api/v1/order", orderRoutes)
+app.use("/api/v1/checkout", checkoutRoutes)
 
 app.use(errorHandler)
 
 export default app;
+
+
