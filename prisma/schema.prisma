@@ -36,8 +36,7 @@ enum OrderStatus {
 
 enum PaymentMethod {
   COD
-  RAZORPAY
-  STRIPE
+  ONLINE
 }
 
 enum PaymentStatus {

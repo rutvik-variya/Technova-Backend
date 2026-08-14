@@ -1,5 +1,7 @@
-import { ProductStatus } from "@prisma/client";
+import { Prisma, PrismaClient, ProductStatus } from "@prisma/client";
+import { DefaultArgs } from "@prisma/client/runtime/library";
 export interface createProductDto {
+    orderId(prisma: PrismaClient<Prisma.PrismaClientOptions, never, DefaultArgs>, userId: string, orderId: any): unknown;
     name: string;
     description: string;
     shortDescription?: string;
