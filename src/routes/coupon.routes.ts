@@ -1,11 +1,25 @@
 import { Router } from "express";
 import { authenticate, authorize } from "../middleware/auth.middleware";
 import validate from "../middleware/validate.middleware";
-import { createCouponSchema, updateCouponSchema } from "../validators/coupon.validator";
-import { createCoupon, deleteCoupon, updateCoupon } from "../controller/coupon.controller";
+import { applyCouponSchema, createCouponSchema, updateCouponSchema } from "../validators/coupon.validator";
+import { applyCoupon, createCoupon, deleteCoupon, removeCoupon, updateCoupon } from "../controller/coupon.controller";
 
 const router = Router();
 
+router.post(
+    "/apply",
+    authenticate,
+    validate({
+        body: applyCouponSchema
+    }),
+    applyCoupon
+);
+
+router.delete(
+    "/remove",
+    authenticate,
+    removeCoupon
+);
 
 // Admin Routes
 router.post(
@@ -34,5 +48,8 @@ router.delete(
     authorize("ADMIN"),
     deleteCoupon
 );
+
+
+
 
 export default router;

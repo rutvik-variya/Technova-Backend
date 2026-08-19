@@ -10,6 +10,7 @@ export const getCartForOrder = async (
         },
         select: {
             id: true,
+            couponId: true,
             cartItems: {
                 select: {
                     id: true,

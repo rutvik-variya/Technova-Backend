@@ -58,6 +58,19 @@ enum CouponStatus {
   INACTIVE
 }
 
+enum ShippingMethod {
+  STANDARD
+  EXPRESS
+}
+
+enum ShippingStatus {
+  PENDING
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
 model User {
   id           String   @id @default(uuid())
   name         String
@@ -251,8 +264,10 @@ model Cart {
   totalItem Int        @default(0)
   user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   cartItems CartItem[]
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
+
+  couponId  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model CartItem {
@@ -332,14 +347,21 @@ model Order {
 
   subtotal Decimal @db.Decimal(10, 2)
 
-  discount       Decimal @default(0) @db.Decimal(10, 2)
-  shippingCharge Decimal @default(0) @db.Decimal(10, 2)
-  tax            Decimal @default(0) @db.Decimal(10, 2)
+  discount Decimal @default(0) @db.Decimal(10, 2)
+
+  shippingMethod ShippingMethod?
+  shippingStatus ShippingStatus  @default(PENDING)
+  shippingCharge Decimal         @default(0) @db.Decimal(10, 2)
+
+  tax Decimal @default(0) @db.Decimal(10, 2)
 
   grandTotal Decimal @db.Decimal(10, 2)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  couponId   String?
+  couponCode String?
 
   orderItems    OrderItem[]
   statusHistory OrderStatusHistory[]
@@ -469,4 +491,18 @@ model CouponUsage {
   @@unique([couponId, userId])
   @@index([couponId])
   @@index([userId])
+}
+
+model ShippingMethodConfig {
+  id                String         @id @default(uuid())
+  method            ShippingMethod @unique
+  name              String
+  baseCharge        Decimal        @db.Decimal(10, 2)
+  freeShippingAbove Decimal        @db.Decimal(10, 2)
+  esimatedDays      Int
+  isActive          Boolean        @default(true)
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  @@index([isActive])
 }

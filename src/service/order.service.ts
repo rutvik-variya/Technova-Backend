@@ -28,6 +28,7 @@ import { pagination } from "../utils/pagination";
 import { createOrderStatusHistory } from "../utils/order/createOrderStatusHistory";
 import { getOrderStatusHistory } from "../utils/order/getOrderStatusHistory";
 import { orderTimelineResponse } from "../utils/order/orderTimelineResponse";
+import { createCouponUsage, validateCouponForOrder } from "../utils/coupon/couponHelper";
 
 export const createOrderService = async (
     userId: string,
@@ -36,7 +37,7 @@ export const createOrderService = async (
 
     return prisma.$transaction(
         async (tx) => {
-
+            // cart
             const cart = await getCartForOrder(
                 tx,
                 userId
@@ -49,6 +50,7 @@ export const createOrderService = async (
                 );
             }
 
+            //address 
             validateOrderCart(cart);
 
             const address = await getAddressForOrder(
@@ -63,8 +65,22 @@ export const createOrderService = async (
                     ORDER_MESSAGE.ADDRESS_NOT_FOUND
                 );
             }
+            // coupon
+            let coupon = null;
+
+            if (cart?.couponId) {
+                coupon =
+                    await validateCouponForOrder(
+                        tx,
+                        cart.couponId,
+                        userId
+                    );
+            }
+
+            // total 
             const total = calculateOrderTotals(
-                cart.cartItems
+                cart.cartItems,
+                coupon
             );
             const orderNumber = generateOrderNumber();
 
@@ -85,6 +101,11 @@ export const createOrderService = async (
                             total.shippingCharge,
                         tax: total.tax,
                         grandTotal: total.grandTotal,
+                        couponId:
+                            coupon?.id ?? null,
+
+                        couponCode:
+                            coupon?.code ?? null,
                     },
 
                     select: {
@@ -98,9 +119,13 @@ export const createOrderService = async (
                         shippingCharge: true,
                         tax: true,
                         grandTotal: true,
+                        couponId: true,
+                        couponCode: true,
                         createdAt: true,
                     },
                 });
+
+            // orderItem 
 
             const orderItems = createOrderItem(
                 cart.cartItems
@@ -119,6 +144,17 @@ export const createOrderService = async (
                 tx,
                 cart.cartItems
             );
+
+            // coupon usages
+            if (coupon) {
+                await createCouponUsage(
+                    tx,
+                    coupon.id,
+                    userId,
+                    order.id,
+                    coupon.usageLimit
+                );
+            }
 
             await clearCart(
                 tx,

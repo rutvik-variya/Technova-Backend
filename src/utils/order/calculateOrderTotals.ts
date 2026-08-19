@@ -1,5 +1,9 @@
+import { Coupon } from "@prisma/client"
+import { calculateDiscount } from "../coupon/calculateDiscount"
+
 export const calculateOrderTotals = (
-    items: any[]
+    items: any[],
+    coupon?: Coupon | null
 ) => {
     const subtotal = items.reduce(
         (total, item) => {
@@ -8,7 +12,19 @@ export const calculateOrderTotals = (
         }, 0
     )
 
-    const discount = 0;
+    let discount = 0;
+
+    if (coupon) {
+        discount = calculateDiscount({
+            type: coupon.type,
+            value: Number(coupon.value),
+            maxOrderAmount: coupon.maxOrderAmount
+                ? Number(coupon.maxOrderAmount)
+                : null,
+            subtotal,
+        });
+    }
+
     const shippingCharge = 0;
     const tax = 0;
 
