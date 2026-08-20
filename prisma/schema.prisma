@@ -499,7 +499,7 @@ model ShippingMethodConfig {
   name              String
   baseCharge        Decimal        @db.Decimal(10, 2)
   freeShippingAbove Decimal        @db.Decimal(10, 2)
-  esimatedDays      Int
+  estimatedDays     Int
   isActive          Boolean        @default(true)
   createdAt         DateTime       @default(now())
   updatedAt         DateTime       @updatedAt
