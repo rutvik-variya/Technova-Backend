@@ -3,7 +3,11 @@ import { z } from "zod";
 
 export const createOrderSchema = z.object({
     addressId: z.uuid("Invalid address ID"),
-    paymentMethod: z.enum(PaymentMethod)
+    paymentMethod: z.enum(PaymentMethod),
+    shippingMethod: z.enum([
+        "STANDARD",
+        "EXPRESS",
+    ]),
 });
 
 export const getMyOrdersSchema = z.object({

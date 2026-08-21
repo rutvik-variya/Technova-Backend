@@ -16,6 +16,7 @@ export const clearCart = async (
             id: cartId,
         },
         data: {
+            couponId: null,
             subtotal: 0,
             totalItem: 0,
         },

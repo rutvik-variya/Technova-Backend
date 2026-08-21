@@ -21,5 +21,6 @@ export interface ShippingResult {
 
 export const SHIPPING_MESSAGE = {
     INVALID_SUBTOTAL: "Invalid subtotal",
-    FETCH_SHIPPING: "Shipping methods fetched successfully"
+    FETCH_SHIPPING: "Shipping methods fetched successfully",
+    INVALID_SHIPPING_METHOD: "Selected shipping method is unavailable",
 }

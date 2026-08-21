@@ -28,7 +28,9 @@ import { pagination } from "../utils/pagination";
 import { createOrderStatusHistory } from "../utils/order/createOrderStatusHistory";
 import { getOrderStatusHistory } from "../utils/order/getOrderStatusHistory";
 import { orderTimelineResponse } from "../utils/order/orderTimelineResponse";
-import { createCouponUsage, validateCouponForOrder } from "../utils/coupon/couponHelper";
+import { consumeCouponForOrder, validateCouponForOrder } from "../utils/coupon/couponHelper";
+import { SHIPPING_MESSAGE } from "../types/shipping.types";
+import { calculateShippingCharge } from "../utils/shipping/shipping.helper";
 
 export const createOrderService = async (
     userId: string,
@@ -66,6 +68,12 @@ export const createOrderService = async (
                 );
             }
             // coupon
+
+            const totalWithoutCoupon = calculateOrderTotals(
+                cart.cartItems,
+                null
+            );
+
             let coupon = null;
 
             if (cart?.couponId) {
@@ -73,7 +81,8 @@ export const createOrderService = async (
                     await validateCouponForOrder(
                         tx,
                         cart.couponId,
-                        userId
+                        userId,
+                        totalWithoutCoupon.subtotal
                     );
             }
 
@@ -82,6 +91,28 @@ export const createOrderService = async (
                 cart.cartItems,
                 coupon
             );
+
+            // shipping Charge
+            const shippingMethod = await tx.shippingMethodConfig.findUnique({
+                where: {
+                    method: payload.shippingMethod,
+                },
+            })
+
+            if (!shippingMethod || !shippingMethod.isActive) {
+                throw new ApiError(400, SHIPPING_MESSAGE.INVALID_SHIPPING_METHOD);
+            }
+
+            const shipping = calculateShippingCharge({
+                shippingMethod: {
+                    ...shippingMethod,
+                    baseCharge: Number(shippingMethod.baseCharge),
+                    freeShippingAbove: Number(shippingMethod.freeShippingAbove),
+                },
+                subtotal: total.subtotal,
+            });
+
+            const grandTotal = total.subtotal - total.discount + shipping.charge + total.tax;
             const orderNumber = generateOrderNumber();
 
             const order =
@@ -92,20 +123,19 @@ export const createOrderService = async (
                         addressId: address.id,
                         status: "PENDING",
                         paymentStatus: "PENDING",
-                        paymentMethod:
-                            payload.paymentMethod,
+                        paymentMethod: payload.paymentMethod,
+
+                        shippingMethod: payload.shippingMethod,
+                        shippingStatus: "PENDING",
 
                         subtotal: total.subtotal,
                         discount: total.discount,
-                        shippingCharge:
-                            total.shippingCharge,
+                        shippingCharge: shipping.charge,
                         tax: total.tax,
-                        grandTotal: total.grandTotal,
-                        couponId:
-                            coupon?.id ?? null,
+                        grandTotal: grandTotal,
 
-                        couponCode:
-                            coupon?.code ?? null,
+                        couponId: coupon?.id ?? null,
+                        couponCode: coupon?.code ?? null,
                     },
 
                     select: {
@@ -114,13 +144,19 @@ export const createOrderService = async (
                         status: true,
                         paymentStatus: true,
                         paymentMethod: true,
+
+                        shippingMethod: true,
+                        shippingStatus: true,
+
                         subtotal: true,
                         discount: true,
                         shippingCharge: true,
                         tax: true,
                         grandTotal: true,
+
                         couponId: true,
                         couponCode: true,
+
                         createdAt: true,
                     },
                 });
@@ -147,7 +183,7 @@ export const createOrderService = async (
 
             // coupon usages
             if (coupon) {
-                await createCouponUsage(
+                await consumeCouponForOrder(
                     tx,
                     coupon.id,
                     userId,

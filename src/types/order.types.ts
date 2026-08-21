@@ -1,8 +1,9 @@
-import { PaymentMethod } from "@prisma/client";
+import { PaymentMethod, ShippingMethod } from "@prisma/client";
 import { OrderStatus } from "@prisma/client";
 export interface CreateOrderDto {
     addressId: string,
     paymentMethod: PaymentMethod;
+    shippingMethod:ShippingMethod;
 }
 export interface OrderTotals {
     subtotal: number;

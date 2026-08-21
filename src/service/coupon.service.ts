@@ -117,6 +117,23 @@ export const applyCouponService = async (
 ) => {
     const coupon = await getValidCoupon(code);
 
+
+    const previousUsage = await prisma.couponUsage.findUnique({
+        where: {
+            couponId_userId: {
+                couponId: coupon.id,
+                userId,
+            },
+        },
+    });
+
+    if (previousUsage) {
+        throw new ApiError(
+            400,
+            COUPON_MESSAGE.COUPON_ALREADY_USED
+        );
+    }
+
     const cart = await prisma.cart.findUnique({
         where: {
             userId
@@ -146,17 +163,19 @@ export const applyCouponService = async (
         )
     }, 0)
 
-    if (coupon.minOrderAmount && subtotal < Number(coupon.minOrderAmount)) {
+    if (coupon.minOrderAmount !== null && subtotal < Number(coupon.minOrderAmount)) {
         throw new ApiError(400, `Minimum order amount is ${coupon.minOrderAmount}`);
     }
 
     const discount = calculateDiscount({
         type: coupon.type,
         value: Number(coupon.value),
-        maxOrderAmount: coupon.maxOrderAmount ? Number(coupon.maxOrderAmount)
-            : null,
-        subtotal
-    })
+        maxOrderAmount:
+            coupon.maxOrderAmount !== null
+                ? Number(coupon.maxOrderAmount)
+                : null,
+        subtotal,
+    });
 
     await prisma.cart.update({
         where: {
@@ -178,8 +197,6 @@ export const applyCouponService = async (
         total: subtotal - discount
     }
 }
-
-
 
 export const removeCouponService = async (
     userId: string

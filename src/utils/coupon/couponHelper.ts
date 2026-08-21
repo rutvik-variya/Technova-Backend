@@ -5,7 +5,8 @@ import { COUPON_MESSAGE } from "../../types/coupon.type";
 export const validateCouponForOrder = async (
     tx: Prisma.TransactionClient,
     couponId: string,
-    userId: string
+    userId: string,
+    subtotal: number
 ) => {
     const coupon = await tx.coupon.findUnique({
         where: {
@@ -31,6 +32,10 @@ export const validateCouponForOrder = async (
         throw new ApiError(400, COUPON_MESSAGE.COUPON_LIMIT_REACHED);
     }
 
+    if (coupon.minOrderAmount !== null && subtotal < Number(coupon.minOrderAmount)) {
+        throw new ApiError(400, `Minimum order amount is ${coupon.minOrderAmount}`);
+    }
+
     const previousUsage =
         await tx.couponUsage.findUnique({
             where: {
@@ -47,7 +52,7 @@ export const validateCouponForOrder = async (
     return coupon;
 };
 
-export const createCouponUsage = async (
+export const consumeCouponForOrder = async (
     tx: Prisma.TransactionClient,
     couponId: string,
     userId: string,

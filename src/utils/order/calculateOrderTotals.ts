@@ -25,16 +25,11 @@ export const calculateOrderTotals = (
         });
     }
 
-    const shippingCharge = 0;
     const tax = 0;
-
-    const grandTotal = subtotal - discount + shippingCharge + tax;
 
     return {
         subtotal,
         discount,
-        shippingCharge,
         tax,
-        grandTotal
     }
 }
