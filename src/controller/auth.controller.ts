@@ -3,6 +3,12 @@ import { ApiResponse } from "../utils/ApiResponse";
 import { asyncHandler } from "../utils/asyncHandler";
 import { AuthService } from "../service/auth.service";
 
+type AuthenticatedRequest = Request & {
+    user: {
+        id: string;
+    };
+};
+
 const register = asyncHandler(async (req: Request, res: Response) => {
     const user = await AuthService.register(
         req.body.name,
@@ -40,6 +46,11 @@ const logout = asyncHandler(async (req: Request, res: Response) => {
     res.json(new ApiResponse(200, "Logout successful"));
 });
 
+
+export const getCurrentUser = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    const user = await AuthService.getCurrentUser(req.user.id);
+    res.json(new ApiResponse(200, "Fetch current user", user));
+});
 
 
 export { register, login, logout }
