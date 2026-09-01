@@ -38,7 +38,7 @@ async function main() {
             name: "Standard Delivery",
             baseCharge: 100,
             freeShippingAbove: 50000,
-            esimatedDays: 5,
+            estimatedDays: 5,
             isActive: true,
         },
     });
@@ -55,7 +55,7 @@ async function main() {
             name: "Express Delivery",
             baseCharge: 250,
             freeShippingAbove: 50000,
-            esimatedDays: 2,
+            estimatedDays: 2,
             isActive: true,
         },
     });
