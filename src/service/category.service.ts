@@ -44,7 +44,7 @@ export const createCategoryService = async (data: CreateCategoryDto) => {
 export const getCategoriesService = async () => {
     return await prisma.category.findMany({
         orderBy: {
-            createdAt: "desc",
+            createdAt: "asc",
         },
         select: categorySelect
     });

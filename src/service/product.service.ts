@@ -196,9 +196,6 @@ export const getFeaturedProductsService = async () => {
             isFeatured: true,
             status: "ACTIVE"
         },
-        orderBy: {
-            createdAt: "desc",
-        },
         select: productSelect
     })
     return products;

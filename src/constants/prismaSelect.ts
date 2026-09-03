@@ -21,7 +21,6 @@ export const productSelect = {
     isFeatured: true,
     createdAt: true,
     updatedAt: true,
-
     category: {
         select: {
             id: true,
@@ -29,6 +28,25 @@ export const productSelect = {
             slug: true,
         },
     },
+    productImages: {
+        select: {
+            id: true,
+            url: true,
+            isPrimary: true,
+            displayOrder: true,
+        }
+    },
+    productVariants: {
+        select: {
+            id: true,
+            sku: true,
+            ram: true,
+            storage: true,
+            color: true,
+            price: true,
+            stock: true
+        }
+    }
 }
 
 
