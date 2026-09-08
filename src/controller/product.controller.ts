@@ -4,6 +4,7 @@ import { ApiResponse } from "../utils/ApiResponse";
 import {
     createProductService,
     deleteProductService,
+    getBrandsService,
     getFeaturedProductsService,
     getProductBySlugService,
     getProductSevice,
@@ -102,6 +103,23 @@ export const getRelatedProducts = asyncHandler(
                 200,
                 PRODUCT_MESSAGE.RELATED_PRODUCTS_FETCHED,
                 products
+            )
+        );
+    }
+);
+
+
+
+export const getBrands = asyncHandler(
+    async (req: Request, res: Response) => {
+
+        const brands = await getBrandsService();
+
+        return res.status(200).json(
+            new ApiResponse(
+                200,
+                PRODUCT_MESSAGE.FETCH_PRODUCT_BRAND,
+                brands
             )
         );
     }

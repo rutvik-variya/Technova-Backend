@@ -3,7 +3,7 @@ import { Router } from "express";
 import { authenticate, authorize } from "../middleware/auth.middleware";
 import validate from "../middleware/validate.middleware";
 import { createProductSchema, updateFeaturedSchema, updateProductSchema } from "../validators/product.validator";
-import { createProduct, deleteProduct, getFeaturedProducts, getProductBySlug, getProducts, getRelatedProducts, updateFeaturedStatus, updateProduct } from "../controller/product.controller";
+import { createProduct, deleteProduct, getBrands, getFeaturedProducts, getProductBySlug, getProducts, getRelatedProducts, updateFeaturedStatus, updateProduct } from "../controller/product.controller";
 import upload from "../middleware/upload.middleware";
 import { deleteProductImage, getProductImage, setPrimaryProductImage, uploadProductImages } from "../controller/productImage.controller";
 import { createVariantSchema, updateVariantSchema } from "../validators/productVariant.validator";
@@ -49,6 +49,11 @@ router.get(
     getRelatedProducts
 );
 
+
+router.get(
+    "/brands",
+    getBrands
+)
 // product routes
 
 router.post("/",

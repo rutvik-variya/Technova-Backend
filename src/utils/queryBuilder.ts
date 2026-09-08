@@ -67,11 +67,9 @@ export const queryBuilder = ({
     if (query.orderNumber) {
         where.orderNumber = query.orderNumber
     }
-    // sorting 
 
-    const sortBy = sortableFields.includes(query.sortBy)
-        ? query.sortBy
-        : sortableFields[0];
+    // sorting 
+    const sortBy = sortableFields.includes(query.sortBy) ? query.sortBy : sortableFields[0];
 
     const sortOrder =
         query.sortOrder === "asc" ? "asc" : "desc";

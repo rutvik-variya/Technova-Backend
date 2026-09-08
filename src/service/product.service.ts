@@ -53,6 +53,10 @@ export const getProductSevice = async (query: any) => {
             "brand",
             "description",
             "shortDescription"
+        ],
+        sortableFields: [
+            "name",
+            "basePrice"
         ]
     })
 
@@ -274,4 +278,25 @@ export const getRelatedProductsService = async (
             select: productSelect,
         });
     return relatedProducts;
+};
+
+
+export const getBrandsService = async () => {
+    const brands = prisma.product.findMany({
+        where: {
+            brand: {
+                not: ""
+            },
+            status: "ACTIVE"
+        },
+        select: {
+            brand: true
+        },
+        distinct: ["brand"],
+        orderBy: {
+            brand: "asc",
+        },
+    })
+
+    return brands;
 };

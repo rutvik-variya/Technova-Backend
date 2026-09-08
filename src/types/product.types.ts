@@ -69,4 +69,5 @@ export const PRODUCT_MESSAGE = {
     FEATURED_UPDATED: "Featured status updated successfully",
 
     RELATED_PRODUCTS_FETCHED: "Related products fetched successfully",
+    FETCH_PRODUCT_BRAND: " Fetch brand successfully"
 }
