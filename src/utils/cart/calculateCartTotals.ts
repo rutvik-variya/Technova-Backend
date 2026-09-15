@@ -1,15 +1,23 @@
-import { CartItem } from "@prisma/client";
+import { Prisma } from "@prisma/client";
+
+type CartItemForTotals = {
+    quantity: number;
+    priceAtAdded: Prisma.Decimal;
+};
 
 export const calculateCartTotals = (
-    items: CartItem[]
+    items: CartItemForTotals[]
 ) => {
-    const subtotal = items.reduce((total, item) => {
-        return total + Number(item.priceAtAdded) * item.quantity;
-    }, 0);
+    let subtotal = 0;
+    let totalItem = 0;
 
-    const totalItem = items.reduce((total, item) => {
-        return total + item.quantity;
-    }, 0);
+    for (const item of items) {
+        subtotal += Number(item.priceAtAdded) * item.quantity;
+        totalItem += item.quantity;
+    }
 
-    return { subtotal, totalItem };
-}
+    return {
+        subtotal,
+        totalItem,
+    };
+};

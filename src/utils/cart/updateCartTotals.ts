@@ -1,5 +1,4 @@
 import { Prisma } from "@prisma/client";
-
 import { calculateCartTotals } from "./calculateCartTotals";
 
 export const updateCartTotals = async (
@@ -8,18 +7,22 @@ export const updateCartTotals = async (
 ) => {
     const items = await tx.cartItem.findMany({
         where: {
-            cartId
-        }
-    })
+            cartId,
+        },
+        select: {
+            quantity: true,
+            priceAtAdded: true,
+        },
+    });
 
     const totals = calculateCartTotals(items);
 
     await tx.cart.update({
         where: {
-            id: cartId
+            id: cartId,
         },
-        data: totals
-    })
-    return totals;
+        data: totals,
+    });
 
-}
+    return totals;
+};

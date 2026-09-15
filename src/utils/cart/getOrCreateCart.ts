@@ -1,24 +1,20 @@
+import prisma from "../../lib/prisma";
 import { Prisma } from "@prisma/client";
 
-// get or create cart for user
-
 export const getOrCreateCart = async (
-    tx: Prisma.TransactionClient,
+    db: typeof prisma | Prisma.TransactionClient,
     userId: string
 ) => {
-    let cart = await tx.cart.findUnique({
+    return db.cart.upsert({
         where: {
-            userId
+            userId,
         },
-    })
-
-    if (!cart) {
-        cart = await tx.cart.create({
-            data: {
-                userId
-            }
-        })
-    }
-
-    return cart;
-}
+        update: {},
+        create: {
+            userId,
+        },
+        select: {
+            id: true,
+        },
+    });
+};

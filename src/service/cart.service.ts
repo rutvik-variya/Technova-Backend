@@ -13,16 +13,24 @@ export const addtocartService = async (
     payload: AddToCartDto
 ) => {
     return prisma.$transaction((tx) =>
-        addItemToCart(tx, userId, payload)
+        addItemToCart(
+            tx,
+            userId,
+            payload
+        )
     );
-}
+};
 
-export const getUserCartService = async (userId: string) => {
-    return prisma.$transaction(async (tx) => {
-        const cart = await getOrCreateCart(tx, userId);
-        return getCart(tx, cart.id)
-    })
-}
+export const getUserCartService = async (
+    userId: string
+) => {
+    const cart = await getOrCreateCart(
+        prisma,
+        userId
+    );
+
+    return getCart(cart.id);
+};
 
 export const updateCartItemService = async (
     userId: string,
@@ -30,57 +38,7 @@ export const updateCartItemService = async (
     payload: UpdateCartItemDto
 ) => {
     return prisma.$transaction(async (tx) => {
-        const cart = await tx.cart.findUnique({
-            where: {
-                userId,
-            },
-        });
 
-        if (!cart) {
-            throw new ApiError(404, CART_MESSAGE.CART_NOT_FOUND);
-        }
-
-        const cartItem = await tx.cartItem.findFirst({
-            where: {
-                id: itemId,
-            },
-            include: {
-                product: {
-                    include: {
-                        productVariants: true
-                    }
-                },
-                variant: true
-            }
-        })
-
-        if (!cartItem || cartItem.cartId !== cart.id) {
-            throw new ApiError(404, CART_MESSAGE.CART_ITEM_NOT_FOUND);
-        }
-
-        const stock = cartItem.variant?.stock ?? cartItem.product.productVariants?.[0]?.stock;
-        validateStock(stock ?? 0, payload.quantity);
-
-        await tx.cartItem.update({
-            where: {
-                id: itemId
-            },
-            data: {
-                quantity: payload.quantity
-            }
-        })
-
-        await updateCartTotals(tx, cart.id);
-        return getCart(tx, cart.id)
-    })
-}
-
-
-export const removeCartItemService = async (
-    userId: string,
-    itemId: string
-) => {
-    return prisma.$transaction(async (tx) => {
         const cartItem = await tx.cartItem.findFirst({
             where: {
                 id: itemId,
@@ -88,10 +46,97 @@ export const removeCartItemService = async (
                     userId,
                 },
             },
+            select: {
+                id: true,
+                cartId: true,
+
+                variant: {
+                    select: {
+                        stock: true,
+                    },
+                },
+
+                product: {
+                    select: {
+                        productVariants: {
+                            where: {
+                                isActive: true,
+                                deletedAt: null,
+                            },
+                            select: {
+                                stock: true,
+                            },
+                            take: 1,
+                        },
+                    },
+                },
+            },
         });
 
         if (!cartItem) {
-            throw new ApiError(404, CART_MESSAGE.CART_ITEM_NOT_FOUND);
+            throw new ApiError(
+                404,
+                CART_MESSAGE.CART_ITEM_NOT_FOUND
+            );
+        }
+
+        const stock =
+            cartItem.variant?.stock ??
+            cartItem.product.productVariants[0]?.stock ??
+            0;
+
+        validateStock(
+            stock,
+            payload.quantity
+        );
+
+        await tx.cartItem.update({
+            where: {
+                id: cartItem.id,
+            },
+            data: {
+                quantity: payload.quantity,
+            },
+        });
+
+        await updateCartTotals(
+            tx,
+            cartItem.cartId
+        );
+
+        return {
+            cartId: cartItem.cartId,
+            itemId: cartItem.id,
+            quantity: payload.quantity,
+        };
+    });
+};
+
+
+export const removeCartItemService = async (
+    userId: string,
+    itemId: string
+) => {
+    return prisma.$transaction(async (tx) => {
+
+        const cartItem = await tx.cartItem.findFirst({
+            where: {
+                id: itemId,
+                cart: {
+                    userId,
+                },
+            },
+            select: {
+                id: true,
+                cartId: true,
+            },
+        });
+
+        if (!cartItem) {
+            throw new ApiError(
+                404,
+                CART_MESSAGE.CART_ITEM_NOT_FOUND
+            );
         }
 
         await tx.cartItem.delete({
@@ -100,19 +145,29 @@ export const removeCartItemService = async (
             },
         });
 
-        await updateCartTotals(tx, cartItem.cartId);
-        return getCart(tx, cartItem.cartId);
+        await updateCartTotals(
+            tx,
+            cartItem.cartId
+        );
+
+        return {
+            cartId: cartItem.cartId,
+            itemId: cartItem.id,
+        };
     });
 };
-
 
 export const clearCartService = async (
     userId: string
 ) => {
     return prisma.$transaction(async (tx) => {
+
         const cart = await tx.cart.findUnique({
             where: {
                 userId,
+            },
+            select: {
+                id: true,
             },
         });
 
@@ -141,7 +196,11 @@ export const clearCartService = async (
             },
         });
 
-        return getCart(tx, cart.id);
+        return {
+            id: cart.id,
+            subtotal: 0,
+            totalItem: 0,
+            cartItems: [],
+        };
     });
 };
-
