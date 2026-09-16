@@ -31,21 +31,15 @@ export const getCart = async (cartId: string) => {
                             name: true,
                             slug: true,
                             brand: true,
-                            status: true,
-                            basePrice: true,
-                            maxPrice: true,
 
                             productImages: {
                                 where: {
                                     isPrimary: true,
                                 },
-                                orderBy: {
-                                    displayOrder: "asc",
-                                },
-                                take: 1,
                                 select: {
                                     url: true,
                                 },
+                                take: 1,
                             },
                         },
                     },
@@ -53,7 +47,6 @@ export const getCart = async (cartId: string) => {
                     variant: {
                         select: {
                             id: true,
-                            productId: true,
                             sku: true,
                             ram: true,
                             storage: true,
@@ -75,11 +68,16 @@ export const getCart = async (cartId: string) => {
 
     return {
         ...cart,
+
         cartItems: cart.cartItems.map((item) => ({
             ...item,
+
             product: {
                 ...item.product,
-                image: item.product.productImages[0]?.url ?? null,
+
+                image:
+                    item.product.productImages[0]?.url ?? null,
+
                 productImages: undefined,
             },
         })),

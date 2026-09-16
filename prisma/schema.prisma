@@ -173,7 +173,7 @@ model ProductImage {
 
   createdAt DateTime @default(now())
 
-  @@index([productId])
+  @@index([productId, isPrimary])
 }
 
 model ProductVariant {
@@ -288,6 +288,9 @@ model CartItem {
   updatedAt DateTime @updatedAt
 
   @@unique([cartId, productId, variantId])
+  @@index([cartId])
+  @@index([productId])
+  @@index([variantId])
 }
 
 model Address {

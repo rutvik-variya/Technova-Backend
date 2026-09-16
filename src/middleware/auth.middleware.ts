@@ -15,9 +15,6 @@ export const authenticate = async (
     const session = await prisma.session.findFirst({
         where: {
             token,
-            expiresAt: {
-                gt: new Date(),
-            },
         },
         include: {
             user: true,
@@ -37,22 +34,32 @@ export const authenticate = async (
         return next(new ApiError(401, "Session expired or invalid"));
     }
 
-    await prisma.session.update({
-        where: {
-            id: session.id,
-        },
-        data: {
-            expiresAt: new Date(Date.now() + SESSION_DURATION),
-        },
-    });
+    const now = Date.now();
+    const expiresAt = session.expiresAt.getTime();
 
-    res.cookie("session", session.token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-        expires: new Date(Date.now() + SESSION_DURATION),
-    });
+    const remainingTime = expiresAt - now;
 
+    if (remainingTime < SESSION_DURATION / 2) {
+        await prisma.session.update({
+            where: {
+                id: session.id,
+            },
+            data: {
+                expiresAt: new Date(
+                    Date.now() + SESSION_DURATION
+                ),
+            },
+        });
+
+        res.cookie("session", session.token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "lax",
+            expires: new Date(
+                Date.now() + SESSION_DURATION
+            ),
+        });
+    }
     (req as any).user = session.user;
     next();
 };
