@@ -11,24 +11,19 @@ export const addWishlistService = async (
     payload: AddWishlistDto
 ) => {
     const { productId } = payload;
-    const product = await prisma.product.findUnique({
-        where: {
-            id: productId
-        }
-    })
-
-    if (!product) {
-        throw new ApiError(404, WISHLIST_MESSAGE.PRODUCT_NOT_FOUND);
-    }
 
     const existing = await prisma.wishlist.findUnique({
         where: {
             wishlist_user_product_unique: {
                 userId,
-                productId
-            }
-        }
-    })
+                productId,
+            },
+        },
+        select: {
+            id: true,
+        },
+    });
+
 
     if (existing) {
         throw new ApiError(409, WISHLIST_MESSAGE.ALREADY_EXISTS);
@@ -39,12 +34,62 @@ export const addWishlistService = async (
             userId,
             productId
         },
-        include: {
-            product: true
-        }
+
+        select: {
+            product: {
+                select: {
+                    id: true
+                },
+            },
+        },
+
     })
 }
 
+export const syncWishlistService = async (
+    userId: string,
+    productIds: string[]
+) => {
+    if (!productIds.length) {
+        return {
+            added: 0,
+        };
+    }
+
+    const products = await prisma.product.findMany({
+        where: {
+            id: {
+                in: productIds,
+            },
+            status: "ACTIVE",
+        },
+        select: {
+            id: true,
+        },
+    });
+
+    if (!products.length) {
+        return {
+            added: 0,
+        };
+    }
+
+    const validProductIds = products.map(
+        (product) => product.id
+    );
+
+    const result = await prisma.wishlist.createMany({
+        data: validProductIds.map((productId) => ({
+            userId,
+            productId,
+        })),
+        skipDuplicates: true,
+    });
+
+    return {
+        added: result.count,
+    };
+};
 
 export const getWishlistService = async (
     userId: string
@@ -62,17 +107,18 @@ export const removeWishlistService = async (
     userId: string,
     productId: string
 ) => {
-
     const wishlistItem = await getWishlistItem(
+        prisma,
         userId,
         productId
     );
 
     await prisma.wishlist.delete({
         where: {
-            id: wishlistItem?.id,
+            id: wishlistItem.id,
         },
     });
+
     return null;
 };
 
@@ -82,6 +128,7 @@ export const moveWishlistToCartService = async (
 ) => {
     return prisma.$transaction(async (tx) => {
         const wishlistItem = await getWishlistItem(
+            tx,
             userId,
             productId
         );
@@ -116,7 +163,6 @@ export const clearWishlistService = async (
             userId,
         },
     });
-
     return;
 };
 

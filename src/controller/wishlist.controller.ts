@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { asyncHandler } from "../utils/asyncHandler";
 import { ApiResponse } from "../utils/ApiResponse";
 import { WISHLIST_MESSAGE } from "../types/wishlist.type";
-import { addWishlistService, clearWishlistService, getWishlistService, moveWishlistToCartService, removeWishlistService } from "../service/wishlist.service";
+import { addWishlistService, clearWishlistService, getWishlistService, moveWishlistToCartService, removeWishlistService, syncWishlistService } from "../service/wishlist.service";
 
 type AuthenticatedRequest = Request & {
     user: {
@@ -27,6 +27,26 @@ export const addWishlist = asyncHandler(
         );
     }
 );
+
+
+
+export const syncWishlist = asyncHandler(
+    async (req: AuthenticatedRequest, res: Response) => {
+        const data = await syncWishlistService(
+            req.user.id,
+            req.body.productIds
+        );
+
+        return res.status(200).json(
+            new ApiResponse(
+                200,
+                WISHLIST_MESSAGE.SYNCED,
+                data
+            )
+        );
+    }
+);
+
 
 export const getWishlist = asyncHandler(
     async (req: AuthenticatedRequest, res: Response) => {

@@ -1,8 +1,8 @@
 import { Router } from "express";
-import { authenticate, authorize } from "../middleware/auth.middleware";
+import { authenticate } from "../middleware/auth.middleware";
 import validate from "../middleware/validate.middleware";
-import { addWishlistSchema, removeWishlistSchema } from "../validators/wishlist.validator";
-import { addWishlist, clearWishlist, getWishlist, moveWishlistToCart, removeWishlist } from "../controller/wishlist.controller";
+import { addWishlistSchema, removeWishlistSchema, syncWishlistSchema } from "../validators/wishlist.validator";
+import { addWishlist, clearWishlist, getWishlist, moveWishlistToCart, removeWishlist, syncWishlist } from "../controller/wishlist.controller";
 
 const router = Router();
 
@@ -13,6 +13,15 @@ router.post(
         body: addWishlistSchema
     }),
     addWishlist
+);
+
+router.post(
+    "/sync",
+    authenticate,
+    validate({
+        body: syncWishlistSchema,
+    }),
+    syncWishlist
 );
 
 router.get(

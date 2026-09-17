@@ -1,6 +1,10 @@
 import prisma from "../lib/prisma";
 import { ApiError } from "../utils/ApiError";
-import { CART_MESSAGE, AddToCartDto, UpdateCartItemDto } from "../types/cart.types";
+import {
+    CART_MESSAGE,
+    AddToCartDto,
+    UpdateCartItemDto,
+} from "../types/cart.types";
 import { validateStock } from "../utils/cart/validateStock";
 import { updateCartTotals } from "../utils/cart/updateCartTotals";
 import { getCart } from "../utils/cart/getCart";
@@ -11,13 +15,10 @@ export const addtocartService = async (
     payload: AddToCartDto
 ) => {
     return prisma.$transaction((tx) =>
-        addItemToCart(
-            tx,
-            userId,
-            payload
-        )
+        addItemToCart(tx, userId, payload)
     );
 };
+
 
 export const getUserCartService = async (
     userId: string
@@ -45,26 +46,25 @@ export const getUserCartService = async (
     return getCart(cart.id);
 };
 
+
 export const updateCartItemService = async (
     userId: string,
     itemId: string,
     payload: UpdateCartItemDto
 ) => {
     return prisma.$transaction(async (tx) => {
-        const cartItem = await tx.cartItem.findUnique({
+
+        const cartItem = await tx.cartItem.findFirst({
             where: {
                 id: itemId,
+                cart: {
+                    userId,
+                },
             },
+
             select: {
                 id: true,
                 cartId: true,
-                quantity: true,
-
-                cart: {
-                    select: {
-                        userId: true,
-                    },
-                },
 
                 variant: {
                     select: {
@@ -90,14 +90,6 @@ export const updateCartItemService = async (
         });
 
         if (!cartItem) {
-            throw new ApiError(
-                404,
-                CART_MESSAGE.CART_ITEM_NOT_FOUND
-            );
-        }
-
-        // Make sure this cart item belongs to logged-in user
-        if (cartItem.cart.userId !== userId) {
             throw new ApiError(
                 404,
                 CART_MESSAGE.CART_ITEM_NOT_FOUND
@@ -137,37 +129,28 @@ export const updateCartItemService = async (
 };
 
 
-
 export const removeCartItemService = async (
     userId: string,
     itemId: string
 ) => {
     return prisma.$transaction(async (tx) => {
 
-        const cartItem = await tx.cartItem.findUnique({
+        const cartItem = await tx.cartItem.findFirst({
             where: {
                 id: itemId,
+
+                cart: {
+                    userId,
+                },
             },
+
             select: {
                 id: true,
                 cartId: true,
-
-                cart: {
-                    select: {
-                        userId: true,
-                    },
-                },
             },
         });
 
         if (!cartItem) {
-            throw new ApiError(
-                404,
-                CART_MESSAGE.CART_ITEM_NOT_FOUND
-            );
-        }
-
-        if (cartItem.cart.userId !== userId) {
             throw new ApiError(
                 404,
                 CART_MESSAGE.CART_ITEM_NOT_FOUND
@@ -210,8 +193,10 @@ export const clearCartService = async (
         if (!cart) {
             return {
                 id: null,
-                subtotal: 0,
+                userId,
+                subtotal: "0",
                 totalItem: 0,
+                couponId: null,
                 cartItems: [],
             };
         }
@@ -234,8 +219,10 @@ export const clearCartService = async (
 
         return {
             id: cart.id,
-            subtotal: 0,
+            userId,
+            subtotal: "0",
             totalItem: 0,
+            couponId: null,
             cartItems: [],
         };
     });

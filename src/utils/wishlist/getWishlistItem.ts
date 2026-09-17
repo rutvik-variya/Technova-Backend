@@ -1,36 +1,51 @@
 import { Prisma } from "@prisma/client";
-import prisma from "../../lib/prisma";
+
 import { ApiError } from "../ApiError";
 import { WISHLIST_MESSAGE } from "../../types/wishlist.type";
 
-export const getWishlistItem = async(
+export const getWishlistItem = async (
+    db: Prisma.TransactionClient | Prisma.DefaultPrismaClient,
     userId: string,
     productId: string
 ) => {
-    const wishlistItem = await prisma.wishlist.findUnique({
+    const wishlistItem = await db.wishlist.findUnique({
         where: {
             wishlist_user_product_unique: {
                 userId,
                 productId,
             },
         },
-        include: {
+        select: {
+            id: true,
+            productId: true,
+
             product: {
                 select: {
                     id: true,
                     name: true,
+
                     productVariants: {
+                        where: {
+                            isActive: true,
+                        },
+                        orderBy: {
+                            createdAt: "asc",
+                        },
+                        take: 1,
                         select: {
-                            id: true
-                        }
-                    }
-                }
-            }
-        }
+                            id: true,
+                        },
+                    },
+                },
+            },
+        },
     });
 
     if (!wishlistItem) {
-        throw new ApiError(404, WISHLIST_MESSAGE.ITEM_NOT_FOUND);
+        throw new ApiError(
+            404,
+            WISHLIST_MESSAGE.ITEM_NOT_FOUND
+        );
     }
 
     return wishlistItem;

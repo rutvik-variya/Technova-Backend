@@ -38,9 +38,9 @@ router.delete(
 );
 
 router.delete(
-  "/",
-  authenticate,
-  clearCart
+    "/",
+    authenticate,
+    clearCart
 );
 
 export default router;

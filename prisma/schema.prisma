@@ -332,7 +332,8 @@ model Wishlist {
   updatedAt DateTime @updatedAt
 
   @@unique([userId, productId], name: "wishlist_user_product_unique")
-  @@index([userId])
+  @@index([userId, createdAt])
+  @@index([productId])
 }
 
 model Order {
