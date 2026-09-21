@@ -15,5 +15,19 @@ export const updateCartItemSchema = z.object({
         .max(100, "Maximum quantity is 100")
 })
 
+
+export const syncCartSchema = z.object({
+    items: z
+        .array(
+            z.object({
+                productId: z.string().uuid(),
+                variantId: z.string().uuid(),
+                quantity: z.number().int().positive(),
+            }),
+        )
+        .max(100),
+});
+
+
 export type AddToCartInput = z.infer<typeof addToCartSchema>;
 export type UpdateCartItemInput = z.infer<typeof updateCartItemSchema>;

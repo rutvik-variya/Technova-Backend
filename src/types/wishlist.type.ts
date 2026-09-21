@@ -13,4 +13,5 @@ export const WISHLIST_MESSAGE = {
     ITEM_NOT_FOUND: "Wishlist item not found.",
     MOVED_TO_CART: "Wishlist item moved to cart successfully.",
     SYNCED: "Wishlist synchronized successfully.",
+    VARIANT_NOT_FOUND: "Product variant not found"
 };

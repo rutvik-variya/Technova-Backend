@@ -126,34 +126,48 @@ export const moveWishlistToCartService = async (
     userId: string,
     productId: string
 ) => {
-    return prisma.$transaction(async (tx) => {
-        const wishlistItem = await getWishlistItem(
-            tx,
-            userId,
-            productId
-        );
+    return prisma.$transaction(
+        async (tx) => {
+            const wishlistItem =
+                await getWishlistItem(
+                    tx,
+                    userId,
+                    productId
+                );
 
-        if (!wishlistItem) {
-            throw new ApiError(404, WISHLIST_MESSAGE.ITEM_NOT_FOUND);
+            const variantId =
+                wishlistItem.product
+                    .productVariants[0]?.id;
+
+            if (!variantId) {
+                throw new ApiError(404, WISHLIST_MESSAGE.VARIANT_NOT_FOUND);
+            }
+
+            const cart =
+                await addItemToCart(
+                    tx,
+                    userId,
+                    {
+                        productId,
+                        variantId,
+                        quantity: 1,
+                    }
+                );
+
+            await tx.wishlist.delete({
+                where: {
+                    id: wishlistItem.id,
+                },
+            });
+
+            return cart;
+        },
+        {
+            maxWait: 5000,
+            timeout: 10000,
         }
-
-        const cart = await addItemToCart(tx, userId, {
-            productId,
-            variantId: wishlistItem.product.productVariants[0]?.id,
-            quantity: 1
-        });
-
-        await tx.wishlist.delete({
-            where: {
-                id: wishlistItem.id,
-            },
-        });
-
-        return cart;
-    },
     );
 };
-
 
 export const clearWishlistService = async (
     userId: string

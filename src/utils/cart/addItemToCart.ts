@@ -1,9 +1,13 @@
 import { Prisma } from "@prisma/client";
-import { AddToCartDto, CART_MESSAGE } from "../../types/cart.types";
+
+import {
+    AddToCartDto,
+    CART_MESSAGE,
+} from "../../types/cart.types";
+
 import { getOrCreateCart } from "./getOrCreateCart";
 import { validateProduct } from "./validateProduct";
 import { validateStock } from "./validateStock";
-import { updateCartTotals } from "./updateCartTotals";
 import { ApiError } from "../ApiError";
 
 export const addItemToCart = async (
@@ -17,17 +21,13 @@ export const addItemToCart = async (
         quantity,
     } = payload;
 
-    // 1. Get or create cart inside transaction
-    const cart = await getOrCreateCart(tx, userId);
+    // 1. Get cart
+    const cart = await getOrCreateCart(
+        tx,
+        userId,
+    );
 
-    if (!cart) {
-        throw new ApiError(
-            500,
-            CART_MESSAGE.FAILED_CREATE_CART
-        );
-    }
-
-    // 2. Validate product + variant
+    // 2. Validate requested variant
     const { variant } = await validateProduct(
         tx,
         productId,
@@ -35,20 +35,24 @@ export const addItemToCart = async (
     );
 
     // 3. Find existing cart item
-    const existingItem = await tx.cartItem.findFirst({
-        where: {
-            cartId: cart.id,
-            productId,
-            variantId: variantId ?? null,
-        },
-        select: {
-            id: true,
-            quantity: true,
-        },
-    });
+    const existingItem =
+        await tx.cartItem.findFirst({
+            where: {
+                cartId: cart.id,
+                productId,
+                variantId,
+            },
+            select: {
+                id: true,
+                quantity: true,
+            },
+        });
+
+    const currentQuantity =
+        existingItem?.quantity ?? 0;
 
     const finalQuantity =
-        (existingItem?.quantity ?? 0) + quantity;
+        currentQuantity + quantity;
 
     // 4. Validate stock
     validateStock(
@@ -56,7 +60,7 @@ export const addItemToCart = async (
         finalQuantity
     );
 
-    // 5. Create / update item
+    // 5. Add/update cart item
     if (existingItem) {
         await tx.cartItem.update({
             where: {
@@ -78,11 +82,23 @@ export const addItemToCart = async (
         });
     }
 
-    // 6. Update cart totals
-    await updateCartTotals(
-        tx,
-        cart.id
-    );
+    // 6. Update cart totals incrementally
+    const subtotalIncrease =
+        Number(variant.price) * quantity;
+
+    await tx.cart.update({
+        where: {
+            id: cart.id,
+        },
+        data: {
+            subtotal: {
+                increment: subtotalIncrease,
+            },
+            totalItem: {
+                increment: quantity,
+            },
+        },
+    });
 
     return {
         cartId: cart.id,

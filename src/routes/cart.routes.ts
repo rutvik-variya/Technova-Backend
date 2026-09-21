@@ -1,8 +1,8 @@
 import { Router } from "express";
 import { authenticate, authorize } from "../middleware/auth.middleware";
 import validate from "../middleware/validate.middleware";
-import { addToCartSchema, updateCartItemSchema } from "../validators/cart.validator";
-import { addToCart, clearCart, getUserCart, removeCartItem, updateCartItem } from "../controller/cart.controller";
+import { addToCartSchema, syncCartSchema, updateCartItemSchema } from "../validators/cart.validator";
+import { addToCart, clearCart, getUserCart, removeCartItem, syncCart, updateCartItem } from "../controller/cart.controller";
 
 const router = Router();
 
@@ -19,6 +19,15 @@ router.get(
     "/",
     authenticate,
     getUserCart
+);
+
+router.post(
+    "/sync",
+    authenticate,
+    validate({
+        body: syncCartSchema,
+    }),
+    syncCart,
 );
 
 router.patch(
@@ -42,5 +51,7 @@ router.delete(
     authenticate,
     clearCart
 );
+
+
 
 export default router;

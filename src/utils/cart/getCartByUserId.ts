@@ -1,17 +1,11 @@
 import prisma from "../../lib/prisma";
-import { Prisma } from "@prisma/client";
 
-type CartDb =
-    | typeof prisma
-    | Prisma.TransactionClient;
-
-export const getCart = async (
-    db: CartDb,
-    cartId: string,
+export const getCartByUserId = async (
+    userId: string,
 ) => {
-    const cart = await db.cart.findUnique({
+    const cart = await prisma.cart.findUnique({
         where: {
-            id: cartId,
+            userId,
         },
 
         select: {
@@ -78,7 +72,14 @@ export const getCart = async (
     });
 
     if (!cart) {
-        return null;
+        return {
+            id: null,
+            userId,
+            subtotal: "0",
+            totalItem: 0,
+            couponId: null,
+            cartItems: [],
+        };
     }
 
     return {

@@ -28,6 +28,15 @@ export const getWishlist = async (
                             name: true,
                         },
                     },
+                    productImages: {
+                        where: {
+                            isPrimary: true,
+                        },
+                        select: {
+                            url: true,
+                        },
+                        take: 1,
+                    },
                 },
             },
         },

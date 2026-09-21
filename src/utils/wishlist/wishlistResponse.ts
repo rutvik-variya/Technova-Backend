@@ -16,6 +16,7 @@ export const wishlistResponse = (wishlist: any[]) => {
                 id: item.product.category.id,
                 name: item.product.category.name,
             },
+            productUrl: item.product.productImages[0]?.url ?? null
         },
     }));
 };

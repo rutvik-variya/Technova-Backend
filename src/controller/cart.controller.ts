@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { asyncHandler } from "../utils/asyncHandler";
 import { ApiResponse } from "../utils/ApiResponse";
 import { CART_MESSAGE } from "../types/cart.types";
-import { addtocartService, getUserCartService, updateCartItemService, removeCartItemService, clearCartService } from "../service/cart.service";
+import { addtocartService, getUserCartService, updateCartItemService, removeCartItemService, clearCartService, syncCartService } from "../service/cart.service";
 
 type AuthenticatedRequest = Request & {
     user: {
@@ -82,18 +82,36 @@ export const removeCartItem = asyncHandler(
 );
 
 export const clearCart = asyncHandler(
-        async (req: AuthenticatedRequest, res: Response) => {
-                const cart = await clearCartService(
-                        req.user.id
-                );
+    async (req: AuthenticatedRequest, res: Response) => {
+        const cart = await clearCartService(
+            req.user.id
+        );
 
-                return res.status(200).json(
-                        new ApiResponse(
-                                200,
-                                "Cart cleared successfully.",
-                                cart
-                        )
-                );
-        }
+        return res.status(200).json(
+            new ApiResponse(
+                200,
+                "Cart cleared successfully.",
+                cart
+            )
+        );
+    }
+);
+
+
+export const syncCart = asyncHandler(
+    async (req: AuthenticatedRequest, res: Response) => {
+        const cart = await syncCartService(
+            req.user.id,
+            req.body,
+        );
+
+        return res.status(200).json(
+            new ApiResponse(
+                200,
+                "Cart synchronized successfully.",
+                cart,
+            ),
+        );
+    },
 );
 

@@ -15,6 +15,8 @@ export const getOrCreateCart = async (
         },
         select: {
             id: true,
+            subtotal: true,
+            totalItem: true,
         },
     });
 };

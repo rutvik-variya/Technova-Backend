@@ -10,6 +10,17 @@ export interface RemoveCartItemDto {
     itemId: string;
 }
 
+export interface SyncCartItemDto {
+    productId: string;
+    variantId: string;
+    quantity: number;
+}
+
+export interface SyncCartDto {
+    items: SyncCartItemDto[];
+}
+
+
 export const CART_MESSAGE = {
     ADDED: "Product added to cart successfully.",
 
