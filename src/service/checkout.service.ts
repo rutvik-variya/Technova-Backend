@@ -8,12 +8,10 @@ import { validateCheckoutCart } from "../utils/checkout/validateCheckoutCart";
 import { validateCheckoutItems } from "../utils/checkout/validateCheckoutItems";
 import { validateCheckoutStock } from "../utils/checkout/validateCheckoutStock";
 
-
 export const getCheckoutService = async (
     userId: string,
     payload: CheckoutDto
 ) => {
-
     const [cart, address] = await Promise.all([
         getCheckoutCart(
             prisma,
@@ -27,30 +25,23 @@ export const getCheckoutService = async (
         ),
     ]);
 
+    if (!cart) {
+        throw new Error("Cart not found");
+    }
 
-    validateCheckoutCart(cart)
+    validateCheckoutCart(cart);
 
-    validateCheckoutItems(cart!.cartItems)
+    validateCheckoutItems(cart.cartItems);
 
-    validateCheckoutStock(cart!.cartItems)
+    validateCheckoutStock(cart.cartItems);
 
     const totals = calculateCartTotals(
-        cart!.cartItems.map(item => ({
-            id: item.id,
-            createdAt: item.createdAt,
-            updatedAt: item.updatedAt,
-            cartId: item.id,
-            productId: item.productId,
-            variantId: item.variantId,
-            quantity: item.quantity,
-            priceAtAdded: item.priceAtAdded
-        }))
-    )
+        cart.cartItems
+    );
 
     return checkoutResponse({
         cart,
         address,
-        totals
-    })
-}
-
+        totals,
+    });
+};

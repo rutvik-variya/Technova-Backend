@@ -318,7 +318,7 @@ model Address {
   updatedAt DateTime @updatedAt
   orders    Order[]
 
-  @@index([userId])
+  @@index([userId, id])
 }
 
 model Wishlist {
