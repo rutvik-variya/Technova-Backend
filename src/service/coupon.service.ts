@@ -3,8 +3,6 @@ import prisma from "../lib/prisma";
 import { COUPON_MESSAGE, CreateCouponInput } from "../types/coupon.type";
 import { ApiError } from "../utils/ApiError";
 import { getValidCoupon } from "../utils/coupon/getValidCoupon";
-import { includes } from "zod";
-import { CART_MESSAGE } from "../types/cart.types";
 import { calculateDiscount } from "../utils/coupon/calculateDiscount";
 
 export const createCouponService = async (
@@ -115,17 +113,44 @@ export const applyCouponService = async (
     userId: string,
     code: string
 ) => {
-    const coupon = await getValidCoupon(code);
+    const [coupon, cart] = await Promise.all([
+        getValidCoupon(code),
 
-
-    const previousUsage = await prisma.couponUsage.findUnique({
-        where: {
-            couponId_userId: {
-                couponId: coupon.id,
+        prisma.cart.findUnique({
+            where: {
                 userId,
             },
-        },
-    });
+            select: {
+                id: true,
+                cartItems: {
+                    select: {
+                        priceAtAdded: true,
+                        quantity: true,
+                    },
+                },
+            },
+        }),
+    ]);
+
+    if (!cart || cart.cartItems.length === 0) {
+        throw new ApiError(
+            400,
+            COUPON_MESSAGE.CART_EMPTY
+        );
+    }
+
+    const previousUsage =
+        await prisma.couponUsage.findUnique({
+            where: {
+                couponId_userId: {
+                    couponId: coupon.id,
+                    userId,
+                },
+            },
+            select: {
+                id: true,
+            },
+        });
 
     if (previousUsage) {
         throw new ApiError(
@@ -134,37 +159,26 @@ export const applyCouponService = async (
         );
     }
 
-    const cart = await prisma.cart.findUnique({
-        where: {
-            userId
+    const subtotal = cart.cartItems.reduce(
+        (total, item) => {
+            return (
+                total +
+                Number(item.priceAtAdded) *
+                item.quantity
+            );
         },
-        include: {
-            cartItems: {
-                include: {
-                    product: {
-                        select: {
-                            id: true,
-                            basePrice: true,
-                            status: true
-                        }
-                    }
-                }
-            }
-        }
-    })
+        0
+    );
 
-    if (!cart || cart.cartItems.length === 0) {
-        throw new ApiError(400, COUPON_MESSAGE.CART_EMPTY)
-    }
-
-    const subtotal = cart.cartItems.reduce((total, item) => {
-        return (
-            total + Number(item.priceAtAdded) * item.quantity
-        )
-    }, 0)
-
-    if (coupon.minOrderAmount !== null && subtotal < Number(coupon.minOrderAmount)) {
-        throw new ApiError(400, `Minimum order amount is ${coupon.minOrderAmount}`);
+    if (
+        coupon.minOrderAmount !== null &&
+        subtotal <
+        Number(coupon.minOrderAmount)
+    ) {
+        throw new ApiError(
+            400,
+            `Minimum order amount is ${coupon.minOrderAmount}`
+        );
     }
 
     const discount = calculateDiscount({
@@ -179,44 +193,41 @@ export const applyCouponService = async (
 
     await prisma.cart.update({
         where: {
-            id: cart.id
+            id: cart.id,
         },
         data: {
-            couponId: coupon.id
-        }
-    })
+            couponId: coupon.id,
+        },
+    });
 
     return {
         coupon: {
             id: coupon.id,
             code: coupon.code,
-            type: coupon.type
+            type: coupon.type,
         },
         subtotal,
         discount,
-        total: subtotal - discount
-    }
-}
+        total: subtotal - discount,
+    };
+};
 
 export const removeCouponService = async (
     userId: string
 ) => {
-    const cart = await prisma.cart.findUnique({
-        where: {
-            userId
-        }
-    });
-
-    if (!cart) {
-        throw new ApiError(404, COUPON_MESSAGE.CART_EMPTY);
+    try {
+        return await prisma.cart.update({
+            where: {
+                userId,
+            },
+            data: {
+                couponId: null,
+            },
+        });
+    } catch (error) {
+        throw new ApiError(
+            404,
+            COUPON_MESSAGE.CART_EMPTY
+        );
     }
-
-    return prisma.cart.update({
-        where: {
-            id: cart.id
-        },
-        data: {
-            couponId: null
-        }
-    });
 };

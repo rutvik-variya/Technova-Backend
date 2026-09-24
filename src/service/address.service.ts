@@ -1,7 +1,5 @@
 import prisma from "../lib/prisma";
-import { CreateAddressDto, UpdateAddressDto } from "../types/address.types";
-import { addressResponse } from "../utils/address/addressResponse";
-import { getAddress } from "../utils/address/getAddress";
+import { ADDRESS_MESSAGE, CreateAddressDto, UpdateAddressDto } from "../types/address.types";
 import { getUserAddress } from "../utils/address/getUserAddress";
 import { unsetDefaultAddress } from "../utils/address/unsetDefaultAddress";
 import { validateAddressOwnership } from "../utils/address/validateAddressOwnership";
@@ -13,19 +11,31 @@ export const createAddressService = async (
     data: CreateAddressDto
 ) => {
     return prisma.$transaction(async (tx) => {
-        const addressCount = await tx.address.count({
+        const existingAddress = await tx.address.findFirst({
             where: {
-                userId
-            }
-        })
+                userId,
+            },
+            select: {
+                id: true,
+            },
+        });
 
-        const shouldBeDefault = addressCount === 0 || data.isDefault === true;
+        const shouldBeDefault =
+            !existingAddress || data.isDefault === true;
 
         if (shouldBeDefault) {
-            await unsetDefaultAddress(tx, userId)
+            await tx.address.updateMany({
+                where: {
+                    userId,
+                    isDefault: true,
+                },
+                data: {
+                    isDefault: false,
+                },
+            });
         }
 
-        const address = await tx.address.create({
+        return tx.address.create({
             data: {
                 userId,
                 fullName: data.fullName,
@@ -34,18 +44,30 @@ export const createAddressService = async (
                 state: data.state,
                 city: data.city,
                 postalCode: data.postalCode,
-
                 addressLine1: data.addressLine1,
                 addressLine2: data.addressLine2,
                 landmark: data.landmark,
                 addressType: data.addressType,
-                isDefault: shouldBeDefault
-            }
-        })
-
-        return addressResponse(address)
-    })
-}
+                isDefault: shouldBeDefault,
+            },
+            select: {
+                id: true,
+                fullName: true,
+                phone: true,
+                country: true,
+                state: true,
+                city: true,
+                postalCode: true,
+                addressLine1: true,
+                addressLine2: true,
+                landmark: true,
+                addressType: true,
+                isDefault: true,
+                createdAt: true,
+            },
+        });
+    });
+};
 
 export const getMyAddressesService = async (
     userId: string
@@ -53,6 +75,21 @@ export const getMyAddressesService = async (
     const addresses = await prisma.address.findMany({
         where: {
             userId,
+        },
+        select: {
+            id: true,
+            fullName: true,
+            phone: true,
+            country: true,
+            state: true,
+            city: true,
+            postalCode: true,
+            addressLine1: true,
+            addressLine2: true,
+            landmark: true,
+            addressType: true,
+            isDefault: true,
+            createdAt: true,
         },
         orderBy: [
             {
@@ -64,27 +101,43 @@ export const getMyAddressesService = async (
         ],
     });
 
-    if (!addresses) {
-        throw new ApiError(404, "Address not found");
-    }
-
-    return addresses.map(addressResponse);
+    return addresses;
 };
-
 
 export const getSingleAddressService = async (
     userId: string,
     addressId: string
 ) => {
-    return prisma.$transaction(async (tx) => {
-        const address = await validateAddressOwnership(
-            tx,
+    const address = await prisma.address.findFirst({
+        where: {
+            id: addressId,
             userId,
-            addressId
-        );
-
-        return addressResponse(address);
+        },
+        select: {
+            id: true,
+            fullName: true,
+            phone: true,
+            country: true,
+            state: true,
+            city: true,
+            postalCode: true,
+            addressLine1: true,
+            addressLine2: true,
+            landmark: true,
+            addressType: true,
+            isDefault: true,
+            createdAt: true,
+        },
     });
+
+    if (!address) {
+        throw new ApiError(
+            404,
+            ADDRESS_MESSAGE.ADDRESS_NOT_FOUND
+        );
+    }
+
+    return address;
 };
 
 export const updateAddressService = async (
@@ -92,41 +145,113 @@ export const updateAddressService = async (
     addressId: string,
     payload: UpdateAddressDto
 ) => {
-    return prisma.$transaction(async (tx) => {
-        await getUserAddress(
-            tx,
-            userId,
-            addressId
-        );
-
-        if (payload.isDefault) {
-            await unsetDefaultAddress(
+    if (payload.isDefault === true) {
+        return prisma.$transaction(async (tx) => {
+            await getUserAddress(
                 tx,
-                userId
+                userId,
+                addressId
             );
-        }
 
-        return tx.address.update({
-            where: {
-                id: addressId,
-            },
-            data: payload,
+            await tx.address.updateMany({
+                where: {
+                    userId,
+                    isDefault: true,
+                    id: {
+                        not: addressId,
+                    },
+                },
+                data: {
+                    isDefault: false,
+                },
+            });
+
+            return tx.address.update({
+                where: {
+                    id: addressId,
+                },
+                data: payload,
+                select: {
+                    id: true,
+                    fullName: true,
+                    phone: true,
+                    country: true,
+                    state: true,
+                    city: true,
+                    postalCode: true,
+                    addressLine1: true,
+                    addressLine2: true,
+                    landmark: true,
+                    addressType: true,
+                    isDefault: true,
+                    createdAt: true,
+                },
+            });
         });
+    }
+
+    const address = await prisma.address.findFirst({
+        where: {
+            id: addressId,
+            userId,
+        },
+        select: {
+            id: true,
+        },
+    });
+
+    if (!address) {
+        throw new ApiError(
+            404,
+            ADDRESS_MESSAGE.ADDRESS_NOT_FOUND
+        );
+    }
+
+    return prisma.address.update({
+        where: {
+            id: addressId,
+        },
+        data: payload,
+        select: {
+            id: true,
+            fullName: true,
+            phone: true,
+            country: true,
+            state: true,
+            city: true,
+            postalCode: true,
+            addressLine1: true,
+            addressLine2: true,
+            landmark: true,
+            addressType: true,
+            isDefault: true,
+            createdAt: true,
+        },
     });
 };
-
 
 export const deleteAddressService = async (
     userId: string,
     addressId: string
 ) => {
     return prisma.$transaction(async (tx) => {
-        const address =
-            await getUserAddress(
-                tx,
+        const address = await tx.address.findFirst({
+            where: {
+                id: addressId,
                 userId,
-                addressId
+            },
+            select: {
+                id: true,
+                isDefault: true,
+            },
+        });
+
+        if (!address) {
+            throw new ApiError(
+                404,
+                ADDRESS_MESSAGE.ADDRESS_NOT_FOUND
             );
+        }
 
         await tx.address.delete({
             where: {
@@ -135,15 +260,17 @@ export const deleteAddressService = async (
         });
 
         if (address.isDefault) {
-            const newestAddress =
-                await tx.address.findFirst({
-                    where: {
-                        userId,
-                    },
-                    orderBy: {
-                        createdAt: "desc",
-                    },
-                });
+            const newestAddress = await tx.address.findFirst({
+                where: {
+                    userId,
+                },
+                orderBy: {
+                    createdAt: "desc",
+                },
+                select: {
+                    id: true,
+                },
+            });
 
             if (newestAddress) {
                 await tx.address.update({
@@ -165,22 +292,59 @@ export const setDefaultAddressService = async (
     addressId: string
 ) => {
     return prisma.$transaction(async (tx) => {
-        await validateAddressOwnership(
-            tx,
-            userId,
-            addressId
-        );
+        const address = await tx.address.findFirst({
+            where: {
+                id: addressId,
+                userId,
+            },
+            select: {
+                id: true,
+            },
+        });
 
-        await unsetDefaultAddress(tx, userId);
-        const address = await tx.address.update({
+        if (!address) {
+            throw new ApiError(
+                404,
+                ADDRESS_MESSAGE.ADDRESS_NOT_FOUND
+            );
+        }
+
+        await tx.address.updateMany({
+            where: {
+                userId,
+                isDefault: true,
+                id: {
+                    not: addressId,
+                },
+            },
+            data: {
+                isDefault: false,
+            },
+        });
+
+        return tx.address.update({
             where: {
                 id: addressId,
             },
             data: {
                 isDefault: true,
             },
+            select: {
+                id: true,
+                fullName: true,
+                phone: true,
+                country: true,
+                state: true,
+                city: true,
+                postalCode: true,
+                addressLine1: true,
+                addressLine2: true,
+                landmark: true,
+                addressType: true,
+                isDefault: true,
+                createdAt: true,
+            },
         });
-        return address;
     });
 };
 

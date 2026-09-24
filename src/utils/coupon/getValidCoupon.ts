@@ -2,14 +2,25 @@ import prisma from "../../lib/prisma";
 import { COUPON_MESSAGE } from "../../types/coupon.type";
 import { ApiError } from "../ApiError";
 
-export const getValidCoupon = async (
-    code: string
-) => {
+export const getValidCoupon = async (code: string) => {
     const now = new Date();
 
     const coupon = await prisma.coupon.findUnique({
         where: {
             code,
+        },
+        select: {
+            id: true,
+            code: true,
+            type: true,
+            value: true,
+            minOrderAmount: true,
+            maxOrderAmount: true,
+            status: true,
+            startDate: true,
+            endDate: true,
+            usageLimit: true,
+            usedCount: true,
         },
     });
 

@@ -51,7 +51,7 @@ router.patch(
     "/:addressId/default",
     authenticate,
     validate({
-        params: setDefaultAddressSchema,
+        params: addressIdSchema,
     }),
     setDefaultAddress
 );
