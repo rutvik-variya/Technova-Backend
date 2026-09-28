@@ -15,11 +15,30 @@ type AuthenticatedRequest = Request & {
 
 export const getShippingMethods = asyncHandler(
     async (req: Request, res: Response) => {
-        const subtotal = Number(req.query.subtotal);
+        const rawSubtotal = req.query.subtotal;
 
-        if (Number.isNaN(subtotal) || subtotal < 0) {
-            throw new ApiError(400, SHIPPING_MESSAGE.INVALID_SUBTOTAL)
+        if (
+            typeof rawSubtotal !== "string" ||
+            rawSubtotal.trim() === ""
+        ) {
+            throw new ApiError(
+                400,
+                SHIPPING_MESSAGE.INVALID_SUBTOTAL
+            );
         }
+
+        const subtotal = Number(rawSubtotal);
+
+        if (
+            !Number.isFinite(subtotal) ||
+            subtotal < 0
+        ) {
+            throw new ApiError(
+                400,
+                SHIPPING_MESSAGE.INVALID_SUBTOTAL
+            );
+        }
+
         const result = await getShippingMethodsService(subtotal);
 
         return res.status(200).json(
@@ -31,4 +50,3 @@ export const getShippingMethods = asyncHandler(
         );
     }
 );
-

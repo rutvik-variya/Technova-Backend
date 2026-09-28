@@ -37,9 +37,10 @@ app.use("/api/v1/wishlist", wishlistRoutes);
 app.use("/api/v1/address", addressRoutes);
 app.use("/api/v1/checkout", checkoutRoutes);
 app.use("/api/v1/coupon", couponRoutes);
-app.use("/api/v1/order", orderRoutes);
-app.use("/api/v1/payment", paymentRoutes);
 app.use("/api/v1/shipping", shippingRoutes);
+app.use("/api/v1/payment", paymentRoutes);
+app.use("/api/v1/order", orderRoutes);
+
 
 
 app.use(errorHandler)
