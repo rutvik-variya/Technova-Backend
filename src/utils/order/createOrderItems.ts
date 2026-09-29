@@ -1,8 +1,7 @@
-export const createOrderItem = (
-    items: any[]
-) => {
+
+export const createOrderItem = (items: any[]) => {
     return items.map((item) => {
-        const unitPrice = Number(item.variant.price)
+        const unitPrice = Number(item.variant.price);
         const totalPrice = unitPrice * item.quantity;
 
         return {
@@ -11,13 +10,10 @@ export const createOrderItem = (
             productName: item.product.name,
             productSlug: item.product.slug,
             brand: item.product.brand,
-
             sku: item.variant.sku,
             quantity: item.quantity,
-
             unitPrice,
-            totalPrice
-        }
-    })
-}
-
+            totalPrice,
+        };
+    });
+};

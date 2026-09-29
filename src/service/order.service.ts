@@ -32,29 +32,23 @@ import { consumeCouponForOrder, validateCouponForOrder } from "../utils/coupon/c
 import { SHIPPING_MESSAGE } from "../types/shipping.types";
 import { calculateShippingCharge } from "../utils/shipping/shipping.helper";
 
+
 export const createOrderService = async (
     userId: string,
     payload: CreateOrderDto
 ) => {
-
     return prisma.$transaction(
         async (tx) => {
-            // cart
-            const cart = await getCartForOrder(
-                tx,
-                userId
-            );
+            // 1. Fetch cart
+            const cart = await getCartForOrder(tx, userId);
 
             if (!cart) {
-                throw new ApiError(
-                    400,
-                    ORDER_MESSAGE.CART_EMPTY
-                );
+                throw new ApiError(400, ORDER_MESSAGE.CART_EMPTY);
             }
 
-            //address 
             validateOrderCart(cart);
 
+            // 2. Fetch address
             const address = await getAddressForOrder(
                 tx,
                 userId,
@@ -67,121 +61,121 @@ export const createOrderService = async (
                     ORDER_MESSAGE.ADDRESS_NOT_FOUND
                 );
             }
-            // coupon
 
-            const totalWithoutCoupon = calculateOrderTotals(
+            // 3. Calculate subtotal
+            const subtotalTotals = calculateOrderTotals(
                 cart.cartItems,
                 null
             );
 
+            // 4. Validate coupon
             let coupon = null;
 
-            if (cart?.couponId) {
-                coupon =
-                    await validateCouponForOrder(
-                        tx,
-                        cart.couponId,
-                        userId,
-                        totalWithoutCoupon.subtotal
-                    );
+            if (cart.couponId) {
+                coupon = await validateCouponForOrder(
+                    tx,
+                    cart.couponId,
+                    userId,
+                    subtotalTotals.subtotal
+                );
             }
 
-            // total 
-            const total = calculateOrderTotals(
+            // 5. Calculate final totals
+            const totals = calculateOrderTotals(
                 cart.cartItems,
                 coupon
             );
 
-            // shipping Charge
-            const shippingMethod = await tx.shippingMethodConfig.findUnique({
-                where: {
-                    method: payload.shippingMethod,
-                },
-            })
+            // 6. Fetch shipping configuration
+            const shippingMethod =
+                await tx.shippingMethodConfig.findUnique({
+                    where: {
+                        method: payload.shippingMethod,
+                    },
+                });
 
             if (!shippingMethod || !shippingMethod.isActive) {
-                throw new ApiError(400, SHIPPING_MESSAGE.INVALID_SHIPPING_METHOD);
+                throw new ApiError(
+                    400,
+                    SHIPPING_MESSAGE.INVALID_SHIPPING_METHOD
+                );
             }
 
+            // 7. Calculate shipping
             const shipping = calculateShippingCharge({
                 shippingMethod: {
                     ...shippingMethod,
                     baseCharge: Number(shippingMethod.baseCharge),
-                    freeShippingAbove: Number(shippingMethod.freeShippingAbove),
+                    freeShippingAbove: Number(
+                        shippingMethod.freeShippingAbove
+                    ),
                 },
-                subtotal: total.subtotal,
+                subtotal: totals.subtotal,
             });
 
-            const grandTotal = total.subtotal - total.discount + shipping.charge + total.tax;
-            const orderNumber = generateOrderNumber();
+            // 8. Calculate grand total
+            const grandTotal =
+                totals.subtotal -
+                totals.discount +
+                shipping.charge +
+                totals.tax;
 
-            const order =
-                await tx.order.create({
-                    data: {
-                        orderNumber,
-                        userId,
-                        addressId: address.id,
-                        status: "PENDING",
-                        paymentStatus: "PENDING",
-                        paymentMethod: payload.paymentMethod,
+            // 9. Create order
+            const order = await tx.order.create({
+                data: {
+                    orderNumber: generateOrderNumber(),
+                    userId,
+                    addressId: address.id,
 
-                        shippingMethod: payload.shippingMethod,
-                        shippingStatus: "PENDING",
+                    status: "PENDING",
+                    paymentStatus: "PENDING",
+                    paymentMethod: payload.paymentMethod,
 
-                        subtotal: total.subtotal,
-                        discount: total.discount,
-                        shippingCharge: shipping.charge,
-                        tax: total.tax,
-                        grandTotal: grandTotal,
+                    shippingMethod: payload.shippingMethod,
+                    shippingStatus: "PENDING",
 
-                        couponId: coupon?.id ?? null,
-                        couponCode: coupon?.code ?? null,
-                    },
+                    subtotal: totals.subtotal,
+                    discount: totals.discount,
+                    shippingCharge: shipping.charge,
+                    tax: totals.tax,
+                    grandTotal,
 
-                    select: {
-                        id: true,
-                        orderNumber: true,
-                        status: true,
-                        paymentStatus: true,
-                        paymentMethod: true,
+                    couponId: coupon?.id ?? null,
+                    couponCode: coupon?.code ?? null,
+                },
+                select: {
+                    id: true,
+                    orderNumber: true,
+                    status: true,
+                    paymentStatus: true,
+                    paymentMethod: true,
+                    shippingMethod: true,
+                    shippingStatus: true,
+                    subtotal: true,
+                    discount: true,
+                    shippingCharge: true,
+                    tax: true,
+                    grandTotal: true,
+                    couponId: true,
+                    couponCode: true,
+                    createdAt: true,
+                },
+            });
 
-                        shippingMethod: true,
-                        shippingStatus: true,
-
-                        subtotal: true,
-                        discount: true,
-                        shippingCharge: true,
-                        tax: true,
-                        grandTotal: true,
-
-                        couponId: true,
-                        couponCode: true,
-
-                        createdAt: true,
-                    },
-                });
-
-            // orderItem 
-
-            const orderItems = createOrderItem(
-                cart.cartItems
-            );
+            // 10. Create order items
+            const orderItems = createOrderItem(cart.cartItems);
 
             await tx.orderItem.createMany({
-                data: orderItems.map(
-                    (item) => ({
-                        orderId: order.id,
-                        ...item,
-                    })
-                ),
+                data: orderItems.map((item) => ({
+                    orderId: order.id,
+                    ...item,
+                })),
             });
 
-            await updateInventory(
-                tx,
-                cart.cartItems
-            );
+            // 11. Bulk inventory deduction
+            await updateInventory(tx, cart.cartItems);
 
-            // coupon usages
+            // 12. Consume coupon
             if (coupon) {
                 await consumeCouponForOrder(
                     tx,
@@ -192,11 +186,10 @@ export const createOrderService = async (
                 );
             }
 
-            await clearCart(
-                tx,
-                cart.id
-            );
+            // 13. Clear cart
+            await clearCart(tx, cart.id);
 
+            // 14. Create order history
             await tx.orderStatusHistory.create({
                 data: {
                     orderId: order.id,
@@ -207,26 +200,15 @@ export const createOrderService = async (
                 },
             });
 
-
-            const result = {
+            // 15. Return response
+            return {
                 ...order,
-                subtotal: Number(
-                    order.subtotal
-                ),
-                discount: Number(
-                    order.discount
-                ),
-                shippingCharge: Number(
-                    order.shippingCharge
-                ),
-                tax: Number(
-                    order.tax
-                ),
-                grandTotal: Number(
-                    order.grandTotal
-                ),
+                subtotal: Number(order.subtotal),
+                discount: Number(order.discount),
+                shippingCharge: Number(order.shippingCharge),
+                tax: Number(order.tax),
+                grandTotal: Number(order.grandTotal),
             };
-            return result;
         },
         {
             timeout: 15000,
@@ -234,7 +216,6 @@ export const createOrderService = async (
         }
     );
 };
-
 
 export const getMyOrdersService = async (
     userId: string,
