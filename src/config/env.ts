@@ -18,6 +18,9 @@ const envSchema = z.object({
     CLOUDINARY_API_SECRET: z.string().min(1),
 
     ADMIN_PASSWORD: z.string().min(1),
+    RAZORPAY_KEY_ID: z.string(),
+    RAZORPAY_KEY_SECRET: z.string()
+
 });
 
 const parsed = envSchema.safeParse(process.env);

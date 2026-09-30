@@ -1,22 +1,32 @@
 import { PaymentMethod } from "@prisma/client";
 
 export interface CreatePaymentDto {
-    orderId: string,
-    paymentMethod: PaymentMethod
+    orderId: string;
+    paymentMethod: PaymentMethod;
+}
+
+export interface VerifyPaymentDto {
+    razorpayPaymentId: string;
+    razorpayOrderId: string;
+    razorpaySignature: string;
 }
 
 export interface PaymentGateway {
     createPaymentOrder(
         amount: number,
         orderId: string
-    ): Promise<{ gatewayOrderId: string }>
+    ): Promise<{
+        gatewayOrderId: string;
+    }>;
 
     verifyPayment(
-        data: Record<string, string>
+        data: VerifyPaymentDto,
+        expectedGatewayOrderId: string,
+        expectedAmount: number
     ): Promise<{
-        success: boolean,
-        transactionId?: string
-    }>
+        success: boolean;
+        transactionId?: string;
+    }>;
 }
 
 export const PAYMENT_MESSAGE = {
@@ -26,7 +36,8 @@ export const PAYMENT_MESSAGE = {
     INVALID_PAYMENT_METHOD: "Invalid payment method",
     INVALID_PAYMENT_STATUS: "Invalid payment status",
     PAYMENT_CREATED: "Payment created successfully",
+    ONLINE_PAYMENT_CREATED: "Online payment created successfully.",
     PAYMENT_SUCCESS: "Payment successful",
     PAYMENT_FAILED: "Payment failed",
-    CANCEL_ORDER: "Cannot pay for a cancelled order"
-}
+    CANCEL_ORDER: "Cannot pay for a cancelled order",
+};

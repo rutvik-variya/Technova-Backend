@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { asyncHandler } from "../utils/asyncHandler";
 import { ApiResponse } from "../utils/ApiResponse";
-import { createPaymentService, verifyPaymentService } from "../service/payment.service";
+import { createOnlinePaymentService, createPaymentService, verifyPaymentService } from "../service/payment.service";
 import { PAYMENT_MESSAGE } from "../types/payment.types";
 
 type AuthenticatedRequest = Request & {
@@ -22,6 +22,23 @@ export const createPayment = asyncHandler(
             new ApiResponse(
                 201,
                 PAYMENT_MESSAGE.PAYMENT_CREATED,
+                result
+            )
+        );
+    }
+);
+
+export const createOnlinePayment = asyncHandler(
+    async (req: AuthenticatedRequest, res: Response) => {
+        const result = await createOnlinePaymentService(
+            req.user.id,
+            req.body.orderId
+        );
+
+        return res.status(201).json(
+            new ApiResponse(
+                201,
+                PAYMENT_MESSAGE.ONLINE_PAYMENT_CREATED,
                 result
             )
         );

@@ -1,8 +1,19 @@
 import { Router } from "express";
-import { authenticate, authorize } from "../middleware/auth.middleware";
+
+import { authenticate } from "../middleware/auth.middleware";
 import validate from "../middleware/validate.middleware";
-import { createPaymentSchema } from "../validators/payment.validator";
-import { createPayment, verifyPayment } from "../controller/payment.controller";
+
+import {
+    createOnlinePaymentSchema,
+    createPaymentSchema,
+    verifyPaymentSchema,
+} from "../validators/payment.validator";
+
+import {
+    createOnlinePayment,
+    createPayment,
+    verifyPayment,
+} from "../controller/payment.controller";
 
 const router = Router();
 
@@ -16,10 +27,21 @@ router.post(
 );
 
 router.post(
-    "/:paymentId/verify",
+    "/online",
     authenticate,
-    verifyPayment
+    validate({
+        body: createOnlinePaymentSchema,
+    }),
+    createOnlinePayment
 );
 
+router.post(
+    "/:paymentId/verify",
+    authenticate,
+    validate({
+        body: verifyPaymentSchema,
+    }),
+    verifyPayment
+);
 
 export default router;
