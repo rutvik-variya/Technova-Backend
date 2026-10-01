@@ -5,23 +5,42 @@ import { env } from "../../config/env";
 import {
     VerifyPaymentDto,
 } from "../../types/payment.types";
+import { ApiError } from "../ApiError";
 
 export const paymentGateway = {
-    async createPaymentOrder(
-        amount: number,
-        orderId: string
-    ) {
+    async createPaymentOrder(amount: number, orderId: string) {
         const amountInPaise = Math.round(amount * 100);
 
-        const razorpayOrder = await razorpay.orders.create({
-            amount: amountInPaise,
-            currency: "INR",
-            receipt: orderId,
-        });
+        if (!Number.isFinite(amountInPaise) || amountInPaise <= 0) {
+            throw new ApiError(400, "Invalid payment amount");
+        }
 
-        return {
-            gatewayOrderId: razorpayOrder.id,
-        };
+        // Razorpay test-mode max (adjust per your account)
+        const RAZORPAY_MAX_AMOUNT_PAISE = 100_000_00; // ₹1,00,000
+        if (amountInPaise > RAZORPAY_MAX_AMOUNT_PAISE) {
+            throw new ApiError(
+                400,
+                `Amount exceeds maximum amount allowed (₹${RAZORPAY_MAX_AMOUNT_PAISE / 100})`
+            );
+        }
+
+        try {
+            const razorpayOrder = await razorpay.orders.create({
+                amount: amountInPaise,
+                currency: "INR",
+                receipt: orderId,
+            });
+
+            return { gatewayOrderId: razorpayOrder.id };
+        } catch (err: any) {
+            // Razorpay SDK throws errors with .error.description
+            const description =
+                err?.error?.description ||
+                err?.message ||
+                "Failed to create Razorpay order";
+
+            throw new ApiError(400, description);
+        }
     },
 
     async verifyPayment(
@@ -80,16 +99,10 @@ export const paymentGateway = {
         }
 
         // 5. Verify amount
-        const expectedAmountInPaise =
-            Math.round(expectedAmount * 100);
+        const expectedAmountInPaise = Math.round(Number(expectedAmount) * 100);
 
-        if (
-            razorpayPayment.amount !==
-            expectedAmountInPaise
-        ) {
-            return {
-                success: false,
-            };
+        if (Math.round(Number(razorpayPayment.amount)) !== expectedAmountInPaise) {
+            return { success: false };
         }
 
         // 6. Verify payment is captured
