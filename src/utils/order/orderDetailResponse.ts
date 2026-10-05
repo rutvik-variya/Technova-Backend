@@ -2,6 +2,7 @@ export const orderDetailResponse = (order: any) => {
     return {
         id: order.id,
         orderNumber: order.orderNumber,
+
         status: order.status,
         paymentStatus: order.paymentStatus,
         paymentMethod: order.paymentMethod,
@@ -28,14 +29,22 @@ export const orderDetailResponse = (order: any) => {
             id: item.id,
             productId: item.productId,
             variantId: item.variantId,
+
             productName: item.productName,
             productSlug: item.productSlug,
             brand: item.brand,
-            image: item.image,
+
+            image:
+                item.product?.productImages?.[0]?.url ??
+                item.image ??
+                null,
+
             sku: item.sku,
             quantity: item.quantity,
+
             unitPrice: Number(item.unitPrice),
             totalPrice: Number(item.totalPrice),
+
             createdAt: item.createdAt,
         })),
 

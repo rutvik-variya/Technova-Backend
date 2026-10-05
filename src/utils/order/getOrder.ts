@@ -42,8 +42,9 @@ export const getOrder = async (
                     addressLine1: true,
                     addressLine2: true,
                     landmark: true,
-                }
+                },
             },
+
             orderItems: {
                 select: {
                     id: true,
@@ -64,6 +65,20 @@ export const getOrder = async (
                     totalPrice: true,
 
                     createdAt: true,
+
+                    product: {
+                        select: {
+                            productImages: {
+                                where: {
+                                    isPrimary: true,
+                                },
+                                select: {
+                                    url: true,
+                                },
+                                take: 1,
+                            },
+                        },
+                    },
                 },
 
                 orderBy: {
