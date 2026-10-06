@@ -1,7 +1,8 @@
 import { Request, Response } from "express";
 import { ApiResponse } from "../utils/ApiResponse";
 import { asyncHandler } from "../utils/asyncHandler";
-import { AuthService } from "../service/auth.service";
+import { AuthService, changePasswordService } from "../service/auth.service";
+import { AUTH_MESSAGE } from "../types/auth.types";
 
 type AuthenticatedRequest = Request & {
     user: {
@@ -52,5 +53,22 @@ export const getCurrentUser = asyncHandler(async (req: AuthenticatedRequest, res
     res.json(new ApiResponse(200, "Fetch current user", user));
 });
 
+
+export const changePassword = asyncHandler(
+    async (req: AuthenticatedRequest, res: Response) => {
+        await changePasswordService(
+            req.user.id,
+            req.body
+        );
+
+        return res.status(200).json(
+            new ApiResponse(
+                200,
+                AUTH_MESSAGE.CHANGE_PASSWORD_SUCCESS,
+                null
+            )
+        );
+    }
+);
 
 export { register, login, logout }

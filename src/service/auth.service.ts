@@ -2,6 +2,8 @@ import { ApiError } from "../utils/ApiError";
 import prisma from "../lib/prisma";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
+import { ChangePasswordDto } from "../validators/auth.validator";
+import { AUTH_MESSAGE } from "../types/auth.types";
 
 export class AuthService {
     // register
@@ -86,3 +88,56 @@ export class AuthService {
     }
 }
 
+export const changePasswordService = async (
+    userId: string,
+    payload: ChangePasswordDto
+) => {
+    const {
+        currentPassword,
+        newPassword,
+    } = payload;
+
+    const user = await prisma.user.findUnique({
+        where: {
+            id: userId,
+        },
+        select: {
+            password: true,
+        },
+    });
+
+    if (!user) {
+        throw new ApiError(
+            404,
+            "User not found"
+        );
+    }
+
+    const isPasswordValid = await bcrypt.compare(
+        currentPassword,
+        user.password
+    );
+
+    if (!isPasswordValid) {
+        throw new ApiError(
+            401,
+            AUTH_MESSAGE.CURRENT_PASSWORD_INVALID
+        );
+    }
+
+    const hashedPassword = await bcrypt.hash(
+        newPassword,
+        10
+    );
+
+    await prisma.user.update({
+        where: {
+            id: userId,
+        },
+        data: {
+            password: hashedPassword,
+        },
+    });
+
+    return null;
+};

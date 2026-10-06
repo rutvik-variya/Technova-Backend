@@ -41,8 +41,6 @@ app.use("/api/v1/shipping", shippingRoutes);
 app.use("/api/v1/payment", paymentRoutes);
 app.use("/api/v1/order", orderRoutes);
 
-
-
 app.use(errorHandler)
 
 export default app;

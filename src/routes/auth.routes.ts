@@ -1,10 +1,11 @@
 import { Router } from "express";
-import { register, login, logout, getCurrentUser } from "../controller/auth.controller";
+import { register, login, logout, getCurrentUser, changePassword } from "../controller/auth.controller";
 import { authenticate, authorize } from "../middleware/auth.middleware";
 import validate from "../middleware/validate.middleware";
 import {
     registerSchema,
     loginSchema,
+    changePasswordSchema,
 } from "../validators/auth.validator";
 
 const router = Router();
@@ -31,7 +32,19 @@ router.get(
     getCurrentUser
 );
 
+router.patch(
+    "/change-password",
+    authenticate,
+    validate({
+        body: changePasswordSchema,
+    }),
+    changePassword
+);
+
 router.post("/logout", authenticate, logout);
 
 
+
+
 export default router;
+
