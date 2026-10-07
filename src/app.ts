@@ -14,6 +14,7 @@ import checkoutRoutes from "./routes/checkout.routes"
 import paymentRoutes from "./routes/payment.routes"
 import couponRoutes from "./routes/coupon.routes"
 import shippingRoutes from "./routes/shipping.routes"
+import adminRoutes from "./routes/admin.routes"
 
 import { errorHandler } from "./middleware/error.middleware";
 
@@ -40,6 +41,7 @@ app.use("/api/v1/coupon", couponRoutes);
 app.use("/api/v1/shipping", shippingRoutes);
 app.use("/api/v1/payment", paymentRoutes);
 app.use("/api/v1/order", orderRoutes);
+app.use("/api/v1/admin", adminRoutes);
 
 app.use(errorHandler)
 

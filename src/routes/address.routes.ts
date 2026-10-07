@@ -1,7 +1,7 @@
 import { Router } from "express";
-import { authenticate, authorize } from "../middleware/auth.middleware";
+import { authenticate } from "../middleware/auth.middleware";
 import validate from "../middleware/validate.middleware";
-import { addressIdSchema, createAddressSchema, setDefaultAddressSchema, updateAddressSchema } from "../validators/address.validator";
+import { addressIdSchema, createAddressSchema, updateAddressSchema } from "../validators/address.validator";
 import { createAddress, deleteAddress, getMyAddresses, getSingleAddress, setDefaultAddress, updateAddress } from "../controller/address.controller";
 
 const router = Router();

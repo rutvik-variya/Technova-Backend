@@ -6,12 +6,6 @@ import { categoryParamsSchema, createCategorySchema, updateCategorySchema } from
 import { createCategory, deleteCategory, getCategories, getCategoryById, updateCategory } from "../controller/category.controller";
 
 const router = Router();
-router.post("/",
-    authenticate,
-    authorize("ADMIN"),
-    validate({ body: createCategorySchema }),
-    createCategory
-)
 
 router.get(
     "/",
@@ -25,6 +19,14 @@ router.get(
     }),
     getCategoryById
 );
+
+
+router.post("/",
+    authenticate,
+    authorize("ADMIN"),
+    validate({ body: createCategorySchema }),
+    createCategory
+)
 
 router.patch(
     "/:id",
