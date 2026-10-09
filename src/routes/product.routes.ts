@@ -54,6 +54,10 @@ router.get(
     "/brands",
     getBrands
 )
+router.get("/:slug", getProductBySlug)
+
+
+// ADMIN ROUTES
 // product routes
 
 router.post("/",
@@ -78,7 +82,7 @@ router.delete(
     deleteProduct
 );
 
-router.get("/:slug", getProductBySlug)
+
 
 // productImage Routes
 
