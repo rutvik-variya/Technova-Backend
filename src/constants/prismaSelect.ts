@@ -39,12 +39,15 @@ export const productSelect = {
     productVariants: {
         select: {
             id: true,
+            productId: true,   // ← add this
             sku: true,
             ram: true,
             storage: true,
             color: true,
             price: true,
-            stock: true
+            stock: true,
+            comparePrice: true,
+            isActive: true,
         }
     }
 }

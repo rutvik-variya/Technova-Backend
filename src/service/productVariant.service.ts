@@ -166,10 +166,8 @@ export const deleteVariantService = async (
         );
     }
 
-    await prisma.productVariant.update({
-        where: {
-            id: variantId,
-        },
+    const deleted = await prisma.productVariant.update({
+        where: { id: variantId },
         data: {
             deletedAt: new Date(),
             isActive: false,
@@ -177,4 +175,6 @@ export const deleteVariantService = async (
     });
 
     await updateProductPrice(variant.productId);
+
+    return deleted;
 };

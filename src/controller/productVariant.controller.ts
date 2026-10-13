@@ -76,12 +76,12 @@ export const updateVariant = asyncHandler(
 
 export const deleteVariant = asyncHandler(
     async (req: Request, res: Response) => {
-        await deleteVariantService(req.params.variantId as string);
+        const deleted = await deleteVariantService(req.params.variantId as string);
         return res.status(200).json(
             new ApiResponse(
                 200,
                 PRODUCT_MESSAGE.DELETE_VARIANT,
-                null
+                deleted
             )
         );
     }

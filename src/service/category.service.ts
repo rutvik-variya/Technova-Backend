@@ -137,9 +137,6 @@ export const deleteCategoryService = async (id: string) => {
         throw new ApiError(404, CATEGORY_MESSAGE.NOT_FOUND);
     }
 
-    // TODO:
-    // Check if category contains products
-    // after Product module implementation
 
     await prisma.category.delete({
         where: {
