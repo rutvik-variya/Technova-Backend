@@ -255,16 +255,24 @@ export const getOrderService = async (
     userId: string,
     orderId: string
 ) => {
-
     const order = await getOrder(
         prisma,
-        userId,
+        orderId,
+        userId
+    );
+
+    return orderDetailResponse(order);
+};
+
+export const getAdminOrderService = async (
+    orderId: string
+) => {
+    const order = await getOrder(
+        prisma,
         orderId
     );
 
-    return orderDetailResponse(
-        order
-    );
+    return orderDetailResponse(order);
 };
 
 

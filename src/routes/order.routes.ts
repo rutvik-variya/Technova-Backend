@@ -3,7 +3,7 @@ import { authenticate, authorize } from "../middleware/auth.middleware";
 import validate from "../middleware/validate.middleware";
 import { adminGetOrdersSchema, cancelOrderSchema, createOrderSchema, getOrderSchema, getOrderStatusHistorySchema, updateOrderStatusBodySchema, updateOrderStatusParamsSchema }
     from "../validators/order.validator";
-import { cancelOrder, createOrder, getAllOrders, getMyOrders, getOrder, getOrderStatusHistory, updateOrderStatus, } from "../controller/order.controller";
+import { cancelOrder, createOrder, getAdminOrder, getAllOrders, getMyOrders, getOrder, getOrderStatusHistory, updateOrderStatus, } from "../controller/order.controller";
 
 const router = Router();
 
@@ -42,6 +42,7 @@ router.patch(
 );
 
 //Admin Routes :
+
 router.get(
     "/admin/getAllOrders",
     authenticate,
@@ -51,6 +52,18 @@ router.get(
     }),
     getAllOrders
 )
+
+
+router.get(
+    "/admin/:orderId",
+    authenticate,
+    authorize("ADMIN"),
+    validate({
+        params: getOrderSchema,
+    }),
+    getAdminOrder
+);
+
 
 router.patch(
     "/admin/:orderId/status",

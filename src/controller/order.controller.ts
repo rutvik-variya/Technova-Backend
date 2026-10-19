@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { asyncHandler } from "../utils/asyncHandler";
 import { ApiResponse } from "../utils/ApiResponse";
 import { ORDER_MESSAGE } from "../types/order.types";
-import { cancelOrderService, createOrderService, getAllOrdersService, getMyOrdersService, getOrderService, getOrderStatusHistoryService, updateOrderStatusService } from "../service/order.service";
+import { cancelOrderService, createOrderService, getAdminOrderService, getAllOrdersService, getMyOrdersService, getOrderService, getOrderStatusHistoryService, updateOrderStatusService } from "../service/order.service";
 
 type AuthenticatedRequest = Request & {
     user: {
@@ -62,6 +62,7 @@ export const getOrder = asyncHandler(
     }
 );
 
+
 export const cancelOrder = asyncHandler(
     async (req: AuthenticatedRequest, res: Response) => {
 
@@ -82,6 +83,29 @@ export const cancelOrder = asyncHandler(
         );
     }
 );
+
+
+
+export const getAdminOrder = asyncHandler(
+    async (req: AuthenticatedRequest, res: Response) => {
+        const { orderId: rawOrderId } = req.params;
+
+        const orderId = Array.isArray(rawOrderId)
+            ? rawOrderId[0]
+            : rawOrderId;
+
+        const order = await getAdminOrderService(orderId);
+
+        return res.status(200).json(
+            new ApiResponse(
+                200,
+                ORDER_MESSAGE.ORDER_FETCHED,
+                order
+            )
+        );
+    }
+);
+
 
 export const getAllOrders = asyncHandler(
     async (req: Request, res: Response) => {
