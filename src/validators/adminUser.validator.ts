@@ -35,3 +35,12 @@ export const adminUsersQuerySchema = z.object({
 export type AdminUsersQueryDto = z.infer<
     typeof adminUsersQuerySchema
 >;
+
+
+export const adminUserIdParamSchema = z.object({
+    userId: z.string().uuid(),
+});
+
+export const updateAdminUserRoleSchema = z.object({
+    role: z.enum(["USER", "ADMIN"]),
+});

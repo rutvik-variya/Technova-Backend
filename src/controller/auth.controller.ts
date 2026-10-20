@@ -3,6 +3,7 @@ import { ApiResponse } from "../utils/ApiResponse";
 import { asyncHandler } from "../utils/asyncHandler";
 import { AuthService, changePasswordService } from "../service/auth.service";
 import { AUTH_MESSAGE } from "../types/auth.types";
+import { updateAdminUserRoleService } from "../service/adminUser.service";
 
 type AuthenticatedRequest = Request & {
     user: {
@@ -10,7 +11,7 @@ type AuthenticatedRequest = Request & {
     };
 };
 
-const register = asyncHandler(async (req: Request, res: Response) => {
+export const register = asyncHandler(async (req: Request, res: Response) => {
     const user = await AuthService.register(
         req.body.name,
         req.body.email,
@@ -21,7 +22,7 @@ const register = asyncHandler(async (req: Request, res: Response) => {
 })
 
 
-const login = asyncHandler(async (req: Request, res: Response) => {
+export const login = asyncHandler(async (req: Request, res: Response) => {
     const result = await AuthService.login(
         req.body.email,
         req.body.password
@@ -37,7 +38,7 @@ const login = asyncHandler(async (req: Request, res: Response) => {
     res.json(new ApiResponse(200, "Login Successful", result.user))
 })
 
-const logout = asyncHandler(async (req: Request, res: Response) => {
+export const logout = asyncHandler(async (req: Request, res: Response) => {
     const token = req.cookies.session;
     if (token) {
         await AuthService.logout(token);
@@ -71,4 +72,29 @@ export const changePassword = asyncHandler(
     }
 );
 
-export { register, login, logout }
+
+export const updateAdminUserRole = asyncHandler(
+    async (req: AuthenticatedRequest, res: Response) => {
+        const rawUserId = req.params.userId;
+
+        const userId = Array.isArray(rawUserId)
+            ? rawUserId[0]
+            : rawUserId;
+
+        const { role } = req.body;
+
+        const user = await updateAdminUserRoleService(
+            userId,
+            role,
+            req.user.id
+        );
+
+        return res.status(200).json(
+            new ApiResponse(
+                200,
+                AUTH_MESSAGE.USER_ROLE_UPDATED,
+                user
+            )
+        );
+    }
+);

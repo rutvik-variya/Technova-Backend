@@ -3,10 +3,11 @@ import { authenticate, authorize } from "../middleware/auth.middleware";
 import { getAdminDashboard, getAdminDashboardSales } from "../controller/adminDashboard.controller";
 import { adminDashboardSalesSchema } from "../validators/adminDashboard.validator";
 import validate from "../middleware/validate.middleware";
-import { adminUsersQuerySchema } from "../validators/adminUser.validator";
+import { adminUserIdParamSchema, adminUsersQuerySchema, updateAdminUserRoleSchema } from "../validators/adminUser.validator";
 import { getAdminUserById, getAdminUsers } from "../controller/adminUser.controller";
 import { getAdminShippingMethods, updateAdminShippingMethod } from "../controller/adminShipping.controller";
 import { adminShippingMethodParamSchema, adminShippingUpdateSchema } from "../validators/adminShipping.validator";
+import { updateAdminUserRole } from "../controller/auth.controller";
 
 
 const router = Router();
@@ -45,6 +46,18 @@ router.get(
     authorize("ADMIN"),
     getAdminUserById
 )
+
+
+router.patch(
+    "/users/:userId/role",
+    authenticate,
+    authorize("ADMIN"),
+    validate({
+        params: adminUserIdParamSchema,
+        body: updateAdminUserRoleSchema,
+    }),
+    updateAdminUserRole
+);
 
 router.get(
     "/shipping",

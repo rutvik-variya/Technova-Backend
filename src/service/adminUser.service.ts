@@ -1,6 +1,7 @@
 import { Prisma, Role } from "@prisma/client";
 import prisma from "../lib/prisma";
 import { ApiError } from "../utils/ApiError";
+import { AUTH_MESSAGE } from "../types/auth.types";
 
 interface AdminUsersQuery {
     page: number;
@@ -148,4 +149,53 @@ export const getAdminUserByIdService = async (
             couponUsageCount: user._count.couponUsages,
         },
     };
+};
+
+
+
+export const updateAdminUserRoleService = async (
+    userId: string,
+    role: Role,
+    requestingAdminId: string
+) => {
+    if (userId === requestingAdminId) {
+        throw new ApiError(400, AUTH_MESSAGE.NOT_CHANGE_OWN_ROLE);
+    }
+
+    const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: {
+            id: true,
+            role: true,
+        },
+    });
+
+    if (!user) {
+        throw new ApiError(404, AUTH_MESSAGE.USER_NOT_FOUND);
+    }
+
+    if (user.role === "ADMIN" && role === "USER") {
+        const adminCount = await prisma.user.count({
+            where: { role: "ADMIN" },
+        });
+
+        if (adminCount <= 1) {
+            throw new ApiError(400, AUTH_MESSAGE.NOT_DEMOTE_LAST_ADMIN);
+        }
+    }
+
+    const updatedUser = await prisma.user.update({
+        where: { id: userId },
+        data: { role },
+        select: {
+            id: true,
+            name: true,
+            email: true,
+            role: true,
+            createdAt: true,
+            updatedAt: true,
+        },
+    });
+
+    return updatedUser;
 };
