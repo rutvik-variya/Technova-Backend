@@ -4,6 +4,8 @@ import { COUPON_MESSAGE, CreateCouponInput } from "../types/coupon.type";
 import { ApiError } from "../utils/ApiError";
 import { getValidCoupon } from "../utils/coupon/getValidCoupon";
 import { calculateDiscount } from "../utils/coupon/calculateDiscount";
+import { queryBuilder } from "../utils/queryBuilder";
+import { pagination } from "../utils/pagination";
 
 export const createCouponService = async (
     data: CreateCouponInput
@@ -53,15 +55,18 @@ export const updateCouponService = async (
         throw new ApiError(404, COUPON_MESSAGE.COUPON_NOT_FOUND);
     }
 
-    if (data.code) {
+    if (data.code && data.code !== coupon.code) {
         const existingCoupon = await prisma.coupon.findUnique({
             where: {
-                code: data.code
-            }
+                code: data.code,
+            },
         });
 
         if (existingCoupon) {
-            throw new ApiError(409, COUPON_MESSAGE.COUPON_CODE_ALREADY_EXIST);
+            throw new ApiError(
+                409,
+                COUPON_MESSAGE.COUPON_CODE_ALREADY_EXIST
+            );
         }
     }
 
@@ -105,6 +110,46 @@ export const deleteCouponService = async (
             status: "INACTIVE"
         }
     });
+};
+
+
+export const getAdminCouponsService = async (query: any) => {
+    const qb = queryBuilder({
+        query,
+        sortableFields: [],
+    });
+
+    const [coupons, total] = await prisma.$transaction([
+        prisma.coupon.findMany({
+            skip: qb.skip,
+            take: qb.take,
+            orderBy: {
+                createdAt: "desc",
+            },
+        }),
+        prisma.coupon.count(),
+    ]);
+
+    return {
+        coupons,
+        pagination: pagination({
+            page: qb.page,
+            limit: qb.limit,
+            total,
+        }),
+    };
+};
+
+export const getAdminCouponByIdService = async (couponId: string) => {
+    const coupon = await prisma.coupon.findUnique({
+        where: { id: couponId },
+    });
+
+    if (!coupon) {
+        throw new ApiError(404, "Coupon not found");
+    }
+
+    return coupon;
 };
 
 // apply coupon service

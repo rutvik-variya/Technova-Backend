@@ -45,7 +45,7 @@ export const getAdminUsers = asyncHandler(
         });
 
         return res.status(200).json(
-            new ApiResponse(    
+            new ApiResponse(
                 200,
                 ADMIN_DASHBOARD_MESSAGE.ADMIN_USERS_FETCHED,
                 result

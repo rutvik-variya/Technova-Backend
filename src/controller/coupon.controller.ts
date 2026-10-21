@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { asyncHandler } from "../utils/asyncHandler";
 import { ApiResponse } from "../utils/ApiResponse";
-import { applyCouponService, createCouponService, deleteCouponService, removeCouponService, updateCouponService } from "../service/coupon.service";
+import { applyCouponService, createCouponService, deleteCouponService, getAdminCouponByIdService, getAdminCouponsService, removeCouponService, updateCouponService } from "../service/coupon.service";
 import { COUPON_MESSAGE } from "../types/coupon.type";
 
 
@@ -56,6 +56,37 @@ export const deleteCoupon = asyncHandler(
         );
     }
 );
+
+export const getAdminCoupons = asyncHandler(
+    async (req: Request, res: Response) => {
+        const result = await getAdminCouponsService(req.query);
+
+        res.status(200).json(
+            new ApiResponse(
+                200,
+                COUPON_MESSAGE.FETCH_ALL_COUPON,
+                result
+            )
+        );
+    }
+);
+
+export const getAdminCouponById = asyncHandler(
+    async (req: Request, res: Response) => {
+        const { couponId } = req.params;
+
+        const coupon = await getAdminCouponByIdService(couponId as string);
+
+        res.status(200).json(
+            new ApiResponse(
+                200,
+                COUPON_MESSAGE.FETCH_COUPON,
+                coupon
+            )
+        );
+    }
+);
+
 
 export const applyCoupon = asyncHandler(
     async (req: AuthenticatedRequest, res: Response) => {

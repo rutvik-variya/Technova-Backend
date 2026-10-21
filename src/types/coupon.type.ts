@@ -17,6 +17,8 @@ export interface CreateCouponInput {
 export const COUPON_MESSAGE = {
     COUPON_ALREADY_EXIST: "Coupon code already exists",
     EXCEED_PERCENTAGE: "Percentage discount cannot exceed 100%",
+    FETCH_COUPON: "Coupon fetched successfully",
+    FETCH_ALL_COUPON: "Coupons fetched successfully",
     CREATE_COUPON: "Coupon created successfully",
     COUPON_NOT_FOUND: "Coupon not found",
     COUPON_CODE_ALREADY_EXIST: "Coupon code already exists",
