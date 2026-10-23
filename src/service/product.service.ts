@@ -180,14 +180,7 @@ export const deleteProductService = async (id: string) => {
         throw new ApiError(404, PRODUCT_MESSAGE.NOT_FOUND);
     }
 
-    await prisma.product.update({
-        where: {
-            id,
-        },
-        data: {
-            deletedAt: new Date(),
-        },
-    });
+    await prisma.product.delete({ where: { id } });
 }
 
 
