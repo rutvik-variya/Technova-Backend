@@ -16,11 +16,12 @@ import couponRoutes from "./routes/coupon.routes"
 import shippingRoutes from "./routes/shipping.routes"
 import adminRoutes from "./routes/admin.routes"
 
+import { env } from "./config/env";
 import { errorHandler } from "./middleware/error.middleware";
 
 const app = express();
 
-app.use(cors({ origin: "http://localhost:3000", credentials: true, }));
+app.use(cors({ origin: env.CORS_ORIGIN, credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
 
@@ -46,5 +47,3 @@ app.use("/api/v1/admin", adminRoutes);
 app.use(errorHandler)
 
 export default app;
-
-
