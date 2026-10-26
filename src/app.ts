@@ -16,14 +16,14 @@ import couponRoutes from "./routes/coupon.routes"
 import shippingRoutes from "./routes/shipping.routes"
 import adminRoutes from "./routes/admin.routes"
 
-import { env } from "./config/env";
 import { errorHandler } from "./middleware/error.middleware";
+import { env } from "node:process";
 
 const app = express();
 
 const allowedOrigins = [
     env.CORS_ORIGIN,
-    process.env.FRONTEND_URL,
+    env.FRONTEND_URL,
 ].filter((origin): origin is string => Boolean(origin));
 
 app.use(
