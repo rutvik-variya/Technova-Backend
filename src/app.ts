@@ -17,7 +17,7 @@ import shippingRoutes from "./routes/shipping.routes"
 import adminRoutes from "./routes/admin.routes"
 
 import { errorHandler } from "./middleware/error.middleware";
-import { env } from "node:process";
+import { env } from "./config/env";
 
 const app = express();
 
