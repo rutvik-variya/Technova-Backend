@@ -24,7 +24,7 @@ const app = express();
 const allowedOrigins = [
     env.CORS_ORIGIN,
     env.FRONTEND_URL,
-].filter((origin): origin is string => Boolean(origin));
+].filter(Boolean);
 
 app.use(
     cors({
@@ -34,6 +34,7 @@ app.use(
 );
 
 app.use(express.json());
+app.set("trust proxy", 1);
 app.use(cookieParser());
 
 app.get("/api/health", (_, res) => {
