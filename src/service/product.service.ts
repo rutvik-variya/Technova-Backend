@@ -66,6 +66,78 @@ export const getProductSevice = async (query: any) => {
         ...qb.where
     }
 
+    if (query.sortBy === "basePrice") {
+        const [priceRows, total] = await prisma.$transaction([
+            prisma.product.findMany({
+                where,
+                select: {
+                    id: true,
+                    basePrice: true,
+                    productVariants: {
+                        select: {
+                            price: true,
+                        },
+                    },
+                },
+            }),
+            prisma.product.count({
+                where,
+            }),
+        ]);
+
+        const sortDirection = query.sortOrder === "asc" ? 1 : -1;
+        const pageIds = priceRows
+            .map((product) => {
+                const minVariantPrice = product.productVariants.reduce(
+                    (min, variant) =>
+                        Math.min(min, Number(variant.price) || Infinity),
+                    Infinity,
+                );
+
+                return {
+                    id: product.id,
+                    price:
+                        minVariantPrice === Infinity
+                            ? Number(product.basePrice)
+                            : minVariantPrice,
+                };
+            })
+            .sort((a, b) => {
+                const priceDifference = a.price - b.price;
+                return priceDifference === 0
+                    ? a.id.localeCompare(b.id)
+                    : priceDifference * sortDirection;
+            })
+            .slice(qb.skip, qb.skip + qb.take)
+            .map((product) => product.id);
+
+        const pageProducts = await prisma.product.findMany({
+            where: {
+                ...where,
+                id: {
+                    in: pageIds,
+                },
+            },
+            select: productSelect,
+        });
+        const productsById = new Map(
+            pageProducts.map((product) => [product.id, product]),
+        );
+        const products = pageIds.flatMap((id) => {
+            const product = productsById.get(id);
+            return product ? [product] : [];
+        });
+
+        return {
+            products,
+            pagination: pagination({
+                page: qb.page,
+                limit: qb.limit,
+                total,
+            }),
+        };
+    }
+
     const [products, total] = await prisma.$transaction([
         prisma.product.findMany({
             where,
