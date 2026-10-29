@@ -44,6 +44,7 @@ export const productSelect = {
             ram: true,
             storage: true,
             color: true,
+            attributes: true,
             price: true,
             stock: true,
             comparePrice: true,
@@ -51,6 +52,5 @@ export const productSelect = {
         }
     }
 }
-
 
 

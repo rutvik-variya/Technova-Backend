@@ -187,6 +187,7 @@ model ProductVariant {
   ram     String?
   storage String?
   color   String?
+  attributes Json @default("{}")
 
   price        Decimal  @db.Decimal(10, 2)
   comparePrice Decimal? @db.Decimal(10, 2)

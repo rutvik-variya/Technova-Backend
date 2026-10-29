@@ -19,6 +19,7 @@ export interface createVariantDto {
     ram?: string;
     storage?: string;
     color?: string;
+    attributes?: Record<string, string>;
 
     price: number;
     comparePrice?: number;

@@ -37,6 +37,7 @@ export const createVariantService = async (
             ram: data.ram,
             storage: data.storage,
             color: data.color,
+            attributes: data.attributes ?? {},
             price: data.price,
             comparePrice: data.comparePrice,
             stock: data.stock,

@@ -60,6 +60,7 @@ export const getCartByUserId = async (
                             ram: true,
                             storage: true,
                             color: true,
+                            attributes: true,
                             price: true,
                             comparePrice: true,
                             stock: true,
